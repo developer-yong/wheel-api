@@ -3,7 +3,6 @@ package com.api.mapper;
 
 import com.api.model.annotation.JDBCField;
 import com.api.model.annotation.TableName;
-import com.api.utils.UUIDUtils;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.SelectProvider;
@@ -12,7 +11,6 @@ import org.apache.ibatis.jdbc.SQL;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 
 /**

@@ -65,6 +65,7 @@ public interface IController<T, P> {
                     JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                     if (jdbcField.isIdentity()) {
                         primaryKey = (String) field.get(t);
+                        break;
                     }
                 }
             } catch (IllegalAccessException e) {

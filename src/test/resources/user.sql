@@ -22,9 +22,9 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-  `user_id` varchar(11) COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户ID',
-  `nickname` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '昵称',
-  `password` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '123456' COMMENT '密码',
+  `user_id` varchar(11) PRIMARY KEY COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户ID',
+  `nickname` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT '昵称',
+  `password` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '123456' COMMENT '密码',
   `icon` blob COMMENT '头像',
   `age` int(4) DEFAULT '0' COMMENT '年龄',
   `birthday` date DEFAULT NULL COMMENT '生日',

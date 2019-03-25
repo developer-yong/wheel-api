@@ -19,7 +19,7 @@ public class User {
      * 昵称
      */
     @NotNull(message = "用户昵称不能为空")
-    @JDBCField(name = "nickname", type = "VARCHAR", isIdentity = true)
+    @JDBCField(name = "nickname", type = "VARCHAR")
     private String nickname;
 
     /**
@@ -27,7 +27,7 @@ public class User {
      */
     @NotNull(message = "用户密码不能为空")
     @Length(min = 6, max = 18, message = "密码长度不能小于6位或大于18位")
-    @JDBCField(name = "password", type = "VARCHAR", isIdentity = true)
+    @JDBCField(name = "password", type = "VARCHAR")
     private String password;
 
     /**
