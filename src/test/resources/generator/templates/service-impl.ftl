@@ -22,7 +22,7 @@ public class ${className}ServiceImpl implements ${className}Service {
 
     @Override
     public boolean delete(String... ${variableName}Id) {
-        return ${variableName}Mapper.delete(${className}.class, ${variableName}Id) > 0;
+        return ${variableName}Mapper.deleteByIds(${className}.class, ${variableName}Id) > 0;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ${className}ServiceImpl implements ${className}Service {
 
     @Override
     public ${className} findById(String ${variableName}Id) {
-        return ${variableName}Mapper.selectOne(${className}.class, ${variableName}Id);
+        return ${variableName}Mapper.selectById(${className}.class, ${variableName}Id);
     }
 
     @Override

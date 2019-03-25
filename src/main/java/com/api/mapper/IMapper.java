@@ -96,9 +96,14 @@ public interface IMapper<T> {
                 if (field.isAnnotationPresent(JDBCField.class)) {
                     JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                     if (jdbcField.isIdentity()) {
-                        String primaryKey = Arrays.toString(primaryKeys).replace(" ", "")
-                                .replace("[", "").replace("]", "");
-                        deleteWhere = jdbcField.name() + " in (" + primaryKey + ")";
+                        StringBuilder builder = new StringBuilder();
+                        for (String primaryKey : primaryKeys) {
+                            if (!StringUtils.isEmpty(builder.toString())) {
+                                builder.append(", ");
+                            }
+                            builder.append("'").append(primaryKey).append("'");
+                        }
+                        deleteWhere = jdbcField.name() + " in (" + builder.toString() + ")";
                         break;
                     }
                 }
@@ -168,7 +173,7 @@ public interface IMapper<T> {
                 if (field.isAnnotationPresent(JDBCField.class)) {
                     JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                     if (jdbcField.isIdentity()) {
-                        selectWhere = jdbcField.name() + " = " + primaryKey.replace(" ", "");
+                        selectWhere = jdbcField.name() + " = '" + primaryKey.replace(" ", "") + "'";
                         break;
                     }
                 }
