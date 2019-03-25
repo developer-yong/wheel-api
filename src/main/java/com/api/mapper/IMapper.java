@@ -23,14 +23,14 @@ public interface IMapper<T> {
     @InsertProvider(type = Provider.class, method = "insert")
     int insert(T record);
 
-    @DeleteProvider(type = Provider.class, method = "delete")
-    int delete(Class<T> clazz, String... ids);
+    @DeleteProvider(type = Provider.class, method = "deleteByIds")
+    int deleteByIds(Class<T> clazz, String... ids);
 
     @UpdateProvider(type = Provider.class, method = "update")
     int update(T record);
 
-    @SelectProvider(type = Provider.class, method = "selectOne")
-    T selectOne(Class<T> clazz, String primaryKey);
+    @SelectProvider(type = Provider.class, method = "selectById")
+    T selectById(Class<T> clazz, String primaryKey);
 
     @SelectProvider(type = Provider.class, method = "selectAll")
     List<T> selectAll(Class<T> clazz);
@@ -56,7 +56,7 @@ public interface IMapper<T> {
                 field.setAccessible(true);
                 try {
                     if ("createdAt".equals(field.getName())) {
-                        sql.VALUES("created_at", System.currentTimeMillis() / 1000 + "");
+                        field.set(record, System.currentTimeMillis() / 1000);
                     }
                     if (field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
@@ -81,7 +81,7 @@ public interface IMapper<T> {
          * @param primaryKeys 主键数组
          * @return 删除Sql语句
          */
-        public String delete(Class<?> clazz, String... primaryKeys) {
+        public String deleteByIds(Class<?> clazz, String... primaryKeys) {
             if (!clazz.isAnnotationPresent(TableName.class)) {
                 throw new IllegalArgumentException("Model 必须添加 TableName 注解");
             }
@@ -99,6 +99,7 @@ public interface IMapper<T> {
                         String primaryKey = Arrays.toString(primaryKeys).replace(" ", "")
                                 .replace("[", "").replace("]", "");
                         deleteWhere = jdbcField.name() + " in (" + primaryKey + ")";
+                        break;
                     }
                 }
             }
@@ -128,7 +129,7 @@ public interface IMapper<T> {
                 field.setAccessible(true);
                 try {
                     if ("updatedAt".equals(field.getName())) {
-                        sql.SET("updated_at = " + System.currentTimeMillis() / 1000);
+                        field.set(record, System.currentTimeMillis() / 1000);
                     }
                     if (field.get(record) != null && field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
@@ -152,7 +153,7 @@ public interface IMapper<T> {
          * @param primaryKey 主键
          * @return 查询Sql语句
          */
-        public String selectOne(Class<?> clazz, String primaryKey) {
+        public String selectById(Class<?> clazz, String primaryKey) {
             if (!clazz.isAnnotationPresent(TableName.class)) {
                 throw new IllegalArgumentException("Model 必须添加 TableName 注解");
             }
@@ -168,6 +169,7 @@ public interface IMapper<T> {
                     JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                     if (jdbcField.isIdentity()) {
                         selectWhere = jdbcField.name() + " = " + primaryKey.replace(" ", "");
+                        break;
                     }
                 }
             }

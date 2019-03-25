@@ -31,7 +31,7 @@ public class ${className}Controller implements IController<${className}, PagePar
     }
 
     @RequestMapping("/delete")
-    public Map<String, Object> delete(@RequestParam String ${variableName}Id) {
+    public Map<String, Object> delete(@RequestParam String... ${variableName}Id) {
         return IController.super.delete(${variableName}Id);
     }
 
@@ -41,8 +41,8 @@ public class ${className}Controller implements IController<${className}, PagePar
     }
 
     @RequestMapping("/detail")
-    public Map<String, Object> detail(String primaryKey) {
-        return IController.super.detail(primaryKey);
+    public Map<String, Object> detail(String ${variableName}Id) {
+        return IController.super.detail(${variableName}Id);
     }
 
     @RequestMapping("/list")

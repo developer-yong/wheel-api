@@ -31,7 +31,7 @@ public class UserController implements IController<User, PageParameter> {
     }
 
     @RequestMapping("/delete")
-    public Map<String, Object> delete(@RequestParam String userId) {
+    public Map<String, Object> delete(@RequestParam String... userId) {
         return IController.super.delete(userId);
     }
 
@@ -41,8 +41,8 @@ public class UserController implements IController<User, PageParameter> {
     }
 
     @RequestMapping("/detail")
-    public Map<String, Object> detail(String primaryKey) {
-        return IController.super.detail(primaryKey);
+    public Map<String, Object> detail(String userId) {
+        return IController.super.detail(userId);
     }
 
     @RequestMapping("/list")

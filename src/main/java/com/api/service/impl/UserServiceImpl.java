@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean delete(String... userId) {
-        return userMapper.delete(User.class, userId) > 0;
+        return userMapper.deleteByIds(User.class, userId) > 0;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(String userId) {
-        return userMapper.selectOne(User.class, userId);
+        return userMapper.selectById(User.class, userId);
     }
 
     @Override
