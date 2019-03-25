@@ -58,13 +58,13 @@ public interface IController<T, P> {
     default Map<String, Object> update(@Valid T t, BindingResult result) {
         Class<?> clazz = t.getClass();
         String primaryKey = "";
-        for (Field field : clazz.getFields()) {
+        for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             try {
                 if (field.isAnnotationPresent(JDBCField.class)) {
                     JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                     if (jdbcField.isIdentity()) {
-                        primaryKey = (String) field.get(clazz);
+                        primaryKey = (String) field.get(t);
                     }
                 }
             } catch (IllegalAccessException e) {

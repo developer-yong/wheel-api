@@ -17,7 +17,7 @@ public class MapUtils {
      */
     public static Map<String, Object> objectToMap(Object obj) {
         Map<String, Object> map = new HashMap<>();
-        Field[] fields = obj.getClass().getFields();
+        Field[] fields = obj.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
             try {
@@ -40,7 +40,7 @@ public class MapUtils {
      */
     public static <T> T mapToObject(Map<String, Object> map, Class<T> clazz) throws Exception {
         T obj = clazz.newInstance();
-        Field[] fields = obj.getClass().getFields();
+        Field[] fields = obj.getClass().getDeclaredFields();
         for (Field field : fields) {
             int mod = field.getModifiers();
             if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
