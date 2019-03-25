@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/${mappingPath}")
+@RequestMapping("/api/${mappingPath}")
 public class ${className}Controller implements IController<${className}, PageParameter> {
 
     @Resource
