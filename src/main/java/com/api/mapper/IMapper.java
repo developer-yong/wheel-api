@@ -58,13 +58,9 @@ public interface IMapper<T> {
                     if ("createdAt".equals(field.getName())) {
                         field.set(record, System.currentTimeMillis() / 1000);
                     }
-                    if (field.isAnnotationPresent(JDBCField.class)) {
+                    if (field.get(record) != null && field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                        if (jdbcField.isIdentity()) {
-                            sql.VALUES(jdbcField.name(), UUIDUtils.uuid());
-                        } else if (field.get(record) != null) {
-                            sql.VALUES(jdbcField.name(), "#{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
-                        }
+                        sql.VALUES(jdbcField.name(), "#{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
                     }
 
                 } catch (IllegalAccessException e) {
