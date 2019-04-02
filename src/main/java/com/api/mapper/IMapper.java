@@ -3,6 +3,8 @@ package com.api.mapper;
 
 import com.api.model.annotation.JDBCField;
 import com.api.model.annotation.TableName;
+import com.api.utils.Check;
+import com.api.utils.UUIDUtils;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.SelectProvider;
@@ -56,11 +58,15 @@ public interface IMapper<T> {
                     if ("createdAt".equals(field.getName())) {
                         field.set(record, System.currentTimeMillis() / 1000);
                     }
-                    if (field.get(record) != null && field.isAnnotationPresent(JDBCField.class)) {
+                    if (field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                        sql.VALUES(jdbcField.name(), "#{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
+                        if (jdbcField.isIdentity() && Check.isEmpty(field)) {
+                            field.set(record, UUIDUtils.uuid());
+                        }
+                        if (field.get(record) != null) {
+                            sql.VALUES(jdbcField.name(), "#{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
+                        }
                     }
-
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
