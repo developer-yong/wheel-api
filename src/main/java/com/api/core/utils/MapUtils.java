@@ -68,7 +68,7 @@ public class MapUtils {
      * @param str 原字符串
      * @return 驼峰式字符串
      */
-    private static String underlineToCamelString(String str) {
+    public static String underlineToCamelString(String str) {
         StringBuilder sb = new StringBuilder();
         boolean nextUpperCase = false;
         for (int i = 0; i < str.length(); i++) {
