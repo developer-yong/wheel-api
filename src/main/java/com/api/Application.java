@@ -1,6 +1,7 @@
 package com.api;
 
 import com.alibaba.fastjson.JSON;
+import com.api.core.ConfigProperties;
 import com.api.core.Response;
 import com.api.core.Code;
 import com.api.core.RequestInterceptor;
@@ -8,6 +9,8 @@ import com.api.core.utils.Logger;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -92,6 +95,12 @@ public class Application {
         @Override
         public void destroy() {
         }
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "config")
+    public ConfigProperties mailProperties() {
+        return new ConfigProperties();
     }
 }
 
