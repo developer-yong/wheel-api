@@ -1,4 +1,4 @@
-package com.api.model.annotation;
+package com.api.core.annotation;
 
 import java.lang.annotation.*;
 

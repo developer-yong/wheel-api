@@ -1,4 +1,4 @@
-package com.api.utils;
+package com.api.core.utils;
 
 import org.slf4j.LoggerFactory;
 

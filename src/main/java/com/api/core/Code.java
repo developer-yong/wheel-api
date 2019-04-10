@@ -1,6 +1,6 @@
-package com.api.common;
+package com.api.core;
 
-import com.api.utils.Check;
+import org.springframework.util.StringUtils;
 
 /**
  * @author coderyong
@@ -47,7 +47,7 @@ public enum Code {
     }
 
     public static Code create(Code code, String message) {
-        if (!Check.isEmpty(message)) {
+        if (!StringUtils.isEmpty(message)) {
             code.message = message;
         }
         return code;

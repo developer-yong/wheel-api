@@ -1,5 +1,6 @@
 package com.api.mapper;
 
+import com.api.core.IMapper;
 import com.api.mapper.provider.UserSelectProvider;
 import com.api.model.User;
 import org.apache.ibatis.annotations.SelectProvider;

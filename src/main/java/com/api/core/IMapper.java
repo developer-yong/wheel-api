@@ -1,19 +1,17 @@
-package com.api.mapper;
+package com.api.core;
 
 
-import com.api.model.annotation.JDBCField;
-import com.api.model.annotation.TableName;
-import com.api.utils.Check;
-import com.api.utils.UUIDUtils;
+import com.api.core.annotation.JDBCField;
+import com.api.core.annotation.TableName;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.jdbc.SQL;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * @author coderyong
@@ -28,12 +26,6 @@ public interface IMapper<T> {
 
     @UpdateProvider(type = Provider.class, method = "update")
     int update(T record);
-
-    @SelectProvider(type = Provider.class, method = "selectById")
-    T selectById(Class<T> clazz, String primaryKey);
-
-    @SelectProvider(type = Provider.class, method = "selectAll")
-    List<T> selectAll(Class<T> clazz);
 
     class Provider {
 
@@ -60,10 +52,10 @@ public interface IMapper<T> {
                     }
                     if (field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                        if (jdbcField.isIdentity() && Check.isEmpty(field)) {
-                            field.set(record, UUIDUtils.uuid());
+                        if (jdbcField.isIdentity() && StringUtils.isEmpty(field)) {
+                            field.set(record, UUID.randomUUID().toString().replaceAll("-", ""));
                         }
-                        if (field.get(record) != null) {
+                        if (!ObjectUtils.isEmpty(field.get(record))) {
                             sql.VALUES(jdbcField.name(), "#{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
                         }
                     }
@@ -136,7 +128,7 @@ public interface IMapper<T> {
                     if ("updatedAt".equals(field.getName())) {
                         field.set(record, System.currentTimeMillis() / 1000);
                     }
-                    if (field.get(record) != null && field.isAnnotationPresent(JDBCField.class)) {
+                    if (!ObjectUtils.isEmpty(field.get(record)) && field.isAnnotationPresent(JDBCField.class)) {
                         JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                         if (jdbcField.isIdentity()) {
                             sql.WHERE(jdbcField.name() + " = #{" + field.getName() + ", jdbcType=" + jdbcField.type() + "}");
@@ -148,55 +140,6 @@ public interface IMapper<T> {
                     e.printStackTrace();
                 }
             }
-            return sql.toString();
-        }
-
-        /**
-         * 查询单条记录
-         *
-         * @param clazz      记录对象
-         * @param primaryKey 主键
-         * @return 查询Sql语句
-         */
-        public String selectById(Class<?> clazz, String primaryKey) {
-            if (!clazz.isAnnotationPresent(TableName.class)) {
-                throw new IllegalArgumentException("Model 必须添加 TableName 注解");
-            }
-            SQL sql = new SQL();
-            sql.SELECT("*").FROM(clazz.getAnnotation(TableName.class).value());
-
-            String selectWhere = "";
-
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                if (field.isAnnotationPresent(JDBCField.class)) {
-                    JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                    if (jdbcField.isIdentity()) {
-                        selectWhere = jdbcField.name() + " = '" + primaryKey.replace(" ", "") + "'";
-                        break;
-                    }
-                }
-            }
-            if (primaryKey != null && StringUtils.isEmpty(selectWhere)) {
-                throw new IllegalArgumentException("查询失败，请确认查询条件是否正确");
-            }
-            sql.WHERE(selectWhere);
-            return sql.toString();
-        }
-
-        /**
-         * 查询所有记录
-         *
-         * @param clazz 记录对象类型
-         * @return 查询Sql语句
-         */
-        public String selectAll(Class<?> clazz) {
-            if (!clazz.isAnnotationPresent(TableName.class)) {
-                throw new IllegalArgumentException("Model 必须添加 TableName 注解");
-            }
-            SQL sql = new SQL();
-            sql.SELECT("*").FROM(clazz.getAnnotation(TableName.class).value());
             return sql.toString();
         }
     }

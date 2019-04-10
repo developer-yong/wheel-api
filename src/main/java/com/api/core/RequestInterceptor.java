@@ -1,9 +1,7 @@
-package com.api.interceptor;
+package com.api.core;
 
 import com.alibaba.fastjson.JSON;
-import com.api.common.Code;
-import com.api.common.Response;
-import com.api.utils.Logger;
+import com.api.core.utils.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 

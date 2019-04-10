@@ -1,7 +1,7 @@
 package com.api.model;
 
-import com.api.model.annotation.JDBCField;
-import com.api.model.annotation.TableName;
+import com.api.core.annotation.JDBCField;
+import com.api.core.annotation.TableName;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;

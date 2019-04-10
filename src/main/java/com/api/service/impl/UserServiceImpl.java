@@ -6,7 +6,7 @@ import com.api.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -16,37 +16,36 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public boolean save(User user) {
-        return userMapper.insert(user) > 0;
+    public String save(User user) {
+        return userMapper.insert(user) > 0 ? "" : "保存失败";
     }
 
     @Override
-    public boolean delete(String... userId) {
-        return userMapper.deleteByIds(User.class, userId) > 0;
+    public String delete(String... userId) {
+        return userMapper.deleteByIds(User.class, userId) > 0 ? "" : "删除失败";
     }
 
     @Override
-    public boolean update(User user) {
-        return userMapper.update(user) > 0;
+    public String update(User user) {
+        return userMapper.update(user) > 0 ? "" : "更新失败";
     }
 
     @Override
-    public User findById(String userId) {
-        return userMapper.selectById(User.class, userId);
+    public Object findById(String userId) {
+        return findBy(new HashMap<String, Object>() {
+            {
+                put("userId", userId);
+            }
+        });
     }
 
     @Override
-    public List<User> findAll() {
-        return userMapper.selectAll(User.class);
-    }
-
-    @Override
-    public Map<String, Object> findBy(Map<String, Object> selectModel) {
+    public Object findBy(Map<String, Object> selectModel) {
         return userMapper.selectBy(selectModel);
     }
 
     @Override
-    public List<Map<String, Object>> findListBy(Map<String, Object> selectModel) {
+    public Object findListBy(Map<String, Object> selectModel) {
         return userMapper.selectListBy(selectModel);
     }
 

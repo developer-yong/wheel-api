@@ -1,4 +1,4 @@
-package com.api.common;
+package com.api.core;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +48,16 @@ public class Response {
     }
 
     /**
+     * 响应失败结果信息
+     *
+     * @param message 响应失败信息
+     * @return 响应结果对象
+     */
+    public static Map<String, Object> fail(String message) {
+        return create(Code.create(Code.FAIL_OPERATE, message), null, 0);
+    }
+
+    /**
      * 响应错误结果信息
      *
      * @param code 响应码
@@ -55,6 +65,16 @@ public class Response {
      */
     public static Map<String, Object> error(Code code) {
         return create(code, null, 0);
+    }
+
+    /**
+     * 响应错误结果信息
+     *
+     * @param message 响应参数错误信息
+     * @return 响应结果对象
+     */
+    public static Map<String, Object> errorParameter(String message) {
+        return create(Code.create(Code.ERROR_PARA, message), null, 0);
     }
 
     /**

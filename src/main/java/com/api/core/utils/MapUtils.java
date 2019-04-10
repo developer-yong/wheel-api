@@ -1,4 +1,4 @@
-package com.api.utils;
+package com.api.core.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

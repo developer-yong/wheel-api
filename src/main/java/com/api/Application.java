@@ -1,10 +1,10 @@
 package com.api;
 
 import com.alibaba.fastjson.JSON;
-import com.api.common.Response;
-import com.api.common.Code;
-import com.api.interceptor.RequestInterceptor;
-import com.api.utils.Logger;
+import com.api.core.Response;
+import com.api.core.Code;
+import com.api.core.RequestInterceptor;
+import com.api.core.utils.Logger;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -6,7 +6,7 @@ import ${package}.service.${className}Service;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -16,37 +16,36 @@ public class ${className}ServiceImpl implements ${className}Service {
     private ${className}Mapper ${variableName}Mapper;
 
     @Override
-    public boolean save(${className} ${variableName}) {
-        return ${variableName}Mapper.insert(${variableName}) > 0;
+    public String save(${className} ${variableName}) {
+        return ${variableName}Mapper.insert(${variableName}) > 0 ? "" : "保存失败";
     }
 
     @Override
-    public boolean delete(String... ${variableName}Id) {
-        return ${variableName}Mapper.deleteByIds(${className}.class, ${variableName}Id) > 0;
+    public String delete(String... ${variableName}Id) {
+        return ${variableName}Mapper.deleteByIds(${className}.class, ${variableName}Id) > 0 ? "" : "删除失败";
     }
 
     @Override
-    public boolean update(${className} ${variableName}) {
-        return ${variableName}Mapper.update(${variableName}) > 0;
+    public String update(${className} ${variableName}) {
+        return ${variableName}Mapper.update(${variableName}) > 0 ? "" : "更新失败";
     }
 
     @Override
-    public ${className} findById(String ${variableName}Id) {
-        return ${variableName}Mapper.selectById(${className}.class, ${variableName}Id);
+    public Object findById(String ${variableName}) {
+        return findBy(new HashMap<String, Object>(){
+            {
+                put("${variableName}", ${variableName});
+            }
+        });
     }
 
     @Override
-    public List<${className}> findAll() {
-        return ${variableName}Mapper.selectAll(${className}.class);
-    }
-
-    @Override
-    public Map<String, Object> findBy(Map<String, Object> selectModel) {
+    public Object findBy(Map<String, Object> selectModel) {
         return ${variableName}Mapper.selectBy(selectModel);
     }
 
     @Override
-    public List<Map<String, Object>> findListBy(Map<String, Object> selectModel) {
+    public Object findListBy(Map<String, Object> selectModel) {
         return ${variableName}Mapper.selectListBy(selectModel);
     }
 

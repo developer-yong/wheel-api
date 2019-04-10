@@ -1,4 +1,4 @@
-package com.api.controller.validator;
+package com.api.core;
 
 import javax.validation.constraints.Min;
 

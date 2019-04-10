@@ -1,8 +1,9 @@
 package com.api.controller;
 
-import com.api.controller.validator.PageParameter;
+import com.api.core.IController;
+import com.api.core.IService;
+import com.api.core.PageParameter;
 import com.api.model.User;
-import com.api.service.IService;
 import com.api.service.UserService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;

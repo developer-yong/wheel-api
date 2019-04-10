@@ -1,8 +1,9 @@
 package ${package}.controller;
 
-import ${package}.controller.validator.PageParameter;
+import ${package}.core.IController;
+import ${package}.core.IService;
+import ${package}.core.PageParameter;
 import ${package}.model.${className};
-import ${package}.service.IService;
 import ${package}.service.${className}Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
