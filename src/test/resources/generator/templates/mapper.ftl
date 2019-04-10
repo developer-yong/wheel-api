@@ -1,5 +1,6 @@
 package ${package}.mapper;
 
+import ${package}.core.IMapper;
 import ${package}.mapper.provider.${className}SelectProvider;
 import ${package}.model.${className};
 import org.apache.ibatis.annotations.SelectProvider;
