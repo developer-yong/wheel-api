@@ -6,8 +6,6 @@ import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.api.dom.java.Field;
-import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultCommentGenerator;
 import org.mybatis.generator.internal.DefaultShellCallback;
@@ -57,6 +55,8 @@ public class CodeGenerator extends DefaultCommentGenerator {
     private static final String PACKAGE_SERVICE = PACKAGE_NAME + ".service";
     //生成的ServiceImpl实现存放路径
     private static final String PACKAGE_SERVICE_IMPL = PACKAGE_NAME + ".service.impl";
+    //生成的ServiceImpl实现存放路径
+    private static final String PACKAGE_SELECT_PARAMETER = PACKAGE_NAME + ".parameter";
 
     //如果表名前带有数据库名需设置此字段，否则设置为空
     private static final String DB_NAME = "workorder";
@@ -79,6 +79,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
             genServiceImpl(modelName);
             genMapper(modelName);
             genProvider(tableName, modelName);
+            genSelectParameter(modelName);
         }
     }
 
@@ -188,19 +189,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
     }
 
     @Override
-    public void addModelClassComment(TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
-        //Model添加注解
-        topLevelClass.addImportedType(
-                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.JDBCField"));
-        topLevelClass.addImportedType(
-                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.TableName"));
-        topLevelClass.addAnnotation("@TableName(value = \"" + introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime() + "\")");
-        super.addModelClassComment(topLevelClass, introspectedTable);
-    }
-
-    @Override
     public void addFieldComment(Field field, IntrospectedTable introspectedTable, IntrospectedColumn introspectedColumn) {
-        //ModelField添加注解
         if (!StringUtils.isEmpty(introspectedColumn.getRemarks())) {
             StringBuilder sb = new StringBuilder();
             field.addJavaDocLine("/**");
@@ -209,16 +198,6 @@ public class CodeGenerator extends DefaultCommentGenerator {
             field.addJavaDocLine(sb.toString().replace("\n", " "));
             field.addJavaDocLine(" */");
         }
-
-        if (introspectedColumn.isIdentity() || !introspectedColumn.isNullable()) {
-            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
-                    + "\", type = \"" + introspectedColumn.getJdbcTypeName()
-                    + "\", isIdentity = true)");
-        } else {
-            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
-                    + "\", type = \"" + introspectedColumn.getJdbcTypeName() + "\")");
-        }
-        super.addFieldComment(field, introspectedTable, introspectedColumn);
     }
 
     /**
@@ -227,27 +206,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param modelName 指定Model类名
      */
     private static void genProvider(String tableName, String modelName) {
-        try {
-            freemarker.template.Configuration config = createConfiguration();
-            if (!StringUtils.isEmpty(modelName)) {
-                Map<String, Object> model = new HashMap<>();
-                model.put("tableName", tableName);
-                model.put("className", modelName);
-                model.put("package", PACKAGE_NAME);
+        Map<String, Object> model = new HashMap<>();
+        model.put("tableName", tableName);
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
 
-                File providerFile = new File(PATH_PROJECT + JAVA_PATH
-                        + packageConvertPath(PACKAGE_PROVIDER) + modelName + "SelectProvider.java");
-                if (providerFile.getParentFile().exists() || providerFile.getParentFile().mkdirs()) {
-                    config.getTemplate("select-provider.ftl").process(model, new FileWriter(providerFile));
-                    if (providerFile.exists()) {
-                        System.out.println(modelName + "SelectProvider.java 已生成");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("SelectProvider生成失败");
-            e.printStackTrace();
-        }
+        freemarkerGenerator(model, PACKAGE_PROVIDER, modelName + "SelectProvider.java", "select-provider.ftl");
     }
 
     /**
@@ -256,26 +221,12 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param modelName 指定Model类名
      */
     private static void genMapper(String modelName) {
-        try {
-            freemarker.template.Configuration config = createConfiguration();
-            if (!StringUtils.isEmpty(modelName)) {
-                Map<String, Object> model = new HashMap<>();
-                model.put("className", modelName);
-                model.put("package", PACKAGE_NAME);
+        Map<String, Object> model = new HashMap<>();
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
 
-                File mapperFile = new File(PATH_PROJECT + JAVA_PATH
-                        + packageConvertPath(PACKAGE_MAPPER) + modelName + "Mapper.java");
-                if (mapperFile.getParentFile().exists() || mapperFile.getParentFile().mkdirs()) {
-                    config.getTemplate("mapper.ftl").process(model, new FileWriter(mapperFile));
-                    if (mapperFile.exists()) {
-                        System.out.println(modelName + "Mapper.java 已生成");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Mapper生成失败");
-            e.printStackTrace();
-        }
+        freemarkerGenerator(model, PACKAGE_MAPPER, modelName + "Mapper.java", "mapper.ftl");
     }
 
     /**
@@ -284,27 +235,12 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param modelName 指定Model类名
      */
     private static void genService(String modelName) {
-        try {
-            freemarker.template.Configuration config = createConfiguration();
-            if (!StringUtils.isEmpty(modelName)) {
-                Map<String, Object> model = new HashMap<>();
-                model.put("className", modelName);
-                model.put("variableName", getCamelString(modelName, false));
-                model.put("package", PACKAGE_NAME);
+        Map<String, Object> model = new HashMap<>();
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
 
-                File serviceFile = new File(PATH_PROJECT + JAVA_PATH
-                        + packageConvertPath(PACKAGE_SERVICE) + modelName + "Service.java");
-                if (serviceFile.getParentFile().exists() || serviceFile.getParentFile().mkdirs()) {
-                    config.getTemplate("service.ftl").process(model, new FileWriter(serviceFile));
-                    if (serviceFile.exists()) {
-                        System.out.println(modelName + "Service.java 已生成");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Service生成失败");
-            e.printStackTrace();
-        }
+        freemarkerGenerator(model, PACKAGE_SERVICE, modelName + "Service.java", "service.ftl");
     }
 
     /**
@@ -313,27 +249,26 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param modelName 指定Model类名
      */
     private static void genServiceImpl(String modelName) {
-        try {
-            freemarker.template.Configuration config = createConfiguration();
-            if (!StringUtils.isEmpty(modelName)) {
-                Map<String, Object> model = new HashMap<>();
-                model.put("className", modelName);
-                model.put("variableName", getCamelString(modelName, false));
-                model.put("package", PACKAGE_NAME);
+        Map<String, Object> model = new HashMap<>();
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
 
-                File serviceImplFile = new File(PATH_PROJECT + JAVA_PATH
-                        + packageConvertPath(PACKAGE_SERVICE_IMPL) + modelName + "ServiceImpl.java");
-                if (serviceImplFile.getParentFile().exists() || serviceImplFile.getParentFile().mkdirs()) {
-                    config.getTemplate("service-impl.ftl").process(model, new FileWriter(serviceImplFile));
-                    if (serviceImplFile.exists()) {
-                        System.out.println(modelName + "ServiceImpl.java 已生成");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("ServiceImpl生成失败");
-            e.printStackTrace();
-        }
+        freemarkerGenerator(model, PACKAGE_SERVICE_IMPL, modelName + "ServiceImpl.java", "service-impl.ftl");
+    }
+
+    /**
+     * 生成指定 Model 的 SelectParameter 类
+     *
+     * @param modelName 指定Model类名
+     */
+    private static void genSelectParameter(String modelName) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
+
+        freemarkerGenerator(model, PACKAGE_SELECT_PARAMETER, modelName + "SelectParameter.java", "select-parameter.ftl");
     }
 
     /**
@@ -343,28 +278,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param mappingPath 指定Controller请求路径
      */
     private static void genController(String modelName, String mappingPath) {
-        try {
-            freemarker.template.Configuration config = createConfiguration();
+        Map<String, Object> model = new HashMap<>();
+        model.put("mappingPath", mappingPath);
+        model.put("className", modelName);
+        model.put("variableName", getCamelString(modelName, false));
+        model.put("package", PACKAGE_NAME);
 
-            Map<String, Object> model = new HashMap<>();
-            model.put("mappingPath", mappingPath);
-            model.put("className", modelName);
-            model.put("variableName", getCamelString(modelName, false));
-            model.put("package", PACKAGE_NAME);
-
-            File controllerFile = new File(PATH_PROJECT + JAVA_PATH
-                    + packageConvertPath(PACKAGE_CONTROLLER) + modelName + "Controller.java");
-            if (controllerFile.getParentFile().exists() || controllerFile.getParentFile().mkdirs()) {
-                config.getTemplate("controller.ftl").process(model, new FileWriter(controllerFile));
-                if (controllerFile.exists()) {
-                    System.out.println(controllerFile.getName() + " 已生成");
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Controller生成失败");
-            e.printStackTrace();
-        }
-
+        freemarkerGenerator(model, PACKAGE_CONTROLLER, modelName + "Controller.java", "controller.ftl");
     }
 
     /**
@@ -387,6 +307,31 @@ public class CodeGenerator extends DefaultCommentGenerator {
         config.setDefaultEncoding("UTF-8");
         config.setTemplateExceptionHandler(TemplateExceptionHandler.IGNORE_HANDLER);
         return config;
+    }
+
+    /**
+     * freemarker自动生成
+     *
+     * @param model           模板需要字段
+     * @param filePackagePath 指定生成文件所在包路径
+     * @param fileName        指定文件名
+     * @param templateName    指定模板名
+     */
+    private static void freemarkerGenerator(Map<String, Object> model, String filePackagePath, String fileName, String templateName) {
+        try {
+            freemarker.template.Configuration config = createConfiguration();
+
+            File file = new File(PATH_PROJECT + JAVA_PATH + packageConvertPath(filePackagePath) + fileName);
+            if (file.getParentFile().exists() || file.getParentFile().mkdirs()) {
+                config.getTemplate(templateName).process(model, new FileWriter(file));
+                if (file.exists()) {
+                    System.out.println(fileName + " 已生成");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(fileName + "生成失败");
+            e.printStackTrace();
+        }
     }
 
     /**

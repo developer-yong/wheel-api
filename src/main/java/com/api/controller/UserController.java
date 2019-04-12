@@ -2,8 +2,8 @@ package com.api.controller;
 
 import com.api.core.IController;
 import com.api.core.IService;
-import com.api.core.PageParameter;
 import com.api.model.User;
+import com.api.parameter.UserSelectParameter;
 import com.api.service.UserService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,13 +16,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserController implements IController<User, PageParameter> {
+public class UserController implements IController<User, UserSelectParameter> {
 
     @Resource
     private UserService userService;
 
     @Override
-    public IService<User> createService() {
+    public IService<User, UserSelectParameter> createService() {
         return userService;
     }
 
@@ -47,7 +47,7 @@ public class UserController implements IController<User, PageParameter> {
     }
 
     @RequestMapping("/list")
-    public Map<String, Object> list(@Valid PageParameter parameter, String keyword, BindingResult result) {
+    public Map<String, Object> list(@Valid UserSelectParameter parameter, String keyword, BindingResult result) {
         return IController.super.list(parameter, keyword, result);
     }
 }

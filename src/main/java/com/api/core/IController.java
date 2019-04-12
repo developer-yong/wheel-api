@@ -1,39 +1,38 @@
 package com.api.core;
 
-import com.api.core.utils.MapUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
 import javax.validation.Valid;
-import java.util.HashMap;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author coderyong
  */
-public interface IController<T, P> {
+public interface IController<M, P> {
 
     /**
      * 创建数据操作对象 继承自Service
      *
      * @return IService
      */
-    IService<T> createService();
+    IService<M, P> createService();
 
 
-    default Map<String, Object> save(@Valid T t, BindingResult result) {
-        IService<T> service = createService();
+    default Map<String, Object> save(@Valid M m, BindingResult result) {
+        IService<M, P> service = createService();
         //判断是否有错误验证信息
         if (result != null && result.hasErrors()) {
             ObjectError error = result.getAllErrors().get(0);
             return Response.error(Code.create(Code.ERROR_PARA, error.getDefaultMessage()));
         }
         //获取保存信息，如没有信息则保存成功
-        String message = service.save(t);
-        return StringUtils.isEmpty(message) ? Response.success(t) : Response.fail(message);
+        String message = service.save(m);
+        return StringUtils.isEmpty(message) ? Response.success(m) : Response.fail(message);
     }
 
     /**
@@ -53,10 +52,11 @@ public interface IController<T, P> {
     /**
      * 更新记录
      *
-     * @param t Model
+     * @param m Model
      */
-    default Map<String, Object> update(@Valid T t, BindingResult result) {
-        String primaryKey = IService.getPrimaryKey(t.getClass());
+    default Map<String, Object> update(@Valid M m, BindingResult result) {
+        IService<M, P> service = createService();
+        String primaryKey = service.getPrimaryKey(m);
         if (StringUtils.isEmpty(primaryKey)) {
             return Response.error(Code.ERROR_PARA);
         }
@@ -68,8 +68,8 @@ public interface IController<T, P> {
             }
         }
         //获取更新信息，如没有信息则更新成功
-        String message = createService().update(t);
-        return StringUtils.isEmpty(message) ? Response.success() : Response.fail();
+        String message = service.update(m);
+        return StringUtils.isEmpty(message) ? Response.success() : Response.fail(message);
     }
 
     /**
@@ -97,21 +97,18 @@ public interface IController<T, P> {
      * @param result    验证参数结果
      */
     default Map<String, Object> list(@Valid P parameter, String keyword, BindingResult result) {
-        IService<T> service = createService();
+        IService<M, P> service = createService();
         //判断是否有错误验证信息
         if (result.hasErrors()) {
             ObjectError error = result.getAllErrors().get(0);
             return Response.error(Code.create(Code.ERROR_PARA, error.getDefaultMessage()));
         }
-        //将参数对象转为Map参数对象
-        Map<String, Object> selectModel = parameter != null ? MapUtils.objectToMap(parameter) : new HashMap<>();
-        selectModel.put("keyword", keyword);
         //获取查询结果信息，如没结果为错误信息返回错误，否则返回查询结果数据
-        Object resultData = service.findListBy(selectModel);
+        Object resultData = service.findListBy(parameter);
         if (ObjectUtils.isEmpty(result) || resultData instanceof String) {
             return Response.fail((String) resultData);
         }
-        int count = service.count(selectModel);
+        int count = service.count(parameter);
         return Response.success(resultData, count < ((List) resultData).size() ? ((List) resultData).size() : count);
     }
 }

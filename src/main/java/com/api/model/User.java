@@ -1,25 +1,20 @@
 package com.api.model;
 
-import com.api.core.annotation.JDBCField;
-import com.api.core.annotation.TableName;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@TableName(value = "user")
 public class User {
     /**
      * 用户ID
      */
-    @JDBCField(name = "user_id", type = "VARCHAR", isIdentity = true)
     private String userId;
 
     /**
      * 昵称
      */
     @NotNull(message = "用户昵称不能为空")
-    @JDBCField(name = "nickname", type = "VARCHAR")
     private String nickname;
 
     /**
@@ -27,31 +22,26 @@ public class User {
      */
     @NotNull(message = "用户密码不能为空")
     @Length(min = 6, max = 18, message = "密码长度不能小于6位或大于18位")
-    @JDBCField(name = "password", type = "VARCHAR")
     private String password;
 
     /**
      * 年龄
      */
-    @JDBCField(name = "age", type = "INTEGER")
     private Integer age;
 
     /**
      * 生日
      */
-    @JDBCField(name = "birthday", type = "DATE")
     private Date birthday;
 
     /**
      * 头像
      */
-    @JDBCField(name = "icon", type = "LONGVARBINARY")
     private byte[] icon;
 
     /**
      * 简介
      */
-    @JDBCField(name = "introduction", type = "LONGVARCHAR")
     private String introduction;
 
     public String getUserId() {

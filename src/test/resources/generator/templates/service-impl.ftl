@@ -2,12 +2,11 @@ package ${package}.service.impl;
 
 import ${package}.mapper.${className}Mapper;
 import ${package}.model.${className};
+import ${package}.parameter.${className}SelectParameter;
 import ${package}.service.${className}Service;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class ${className}ServiceImpl implements ${className}Service {
@@ -22,7 +21,7 @@ public class ${className}ServiceImpl implements ${className}Service {
 
     @Override
     public String delete(String... ${variableName}Id) {
-        return ${variableName}Mapper.deleteByIds(${className}.class, ${variableName}Id) > 0 ? "" : "删除失败";
+        return ${variableName}Mapper.deleteByIds(${variableName}Id) > 0 ? "" : "删除失败";
     }
 
     @Override
@@ -31,27 +30,25 @@ public class ${className}ServiceImpl implements ${className}Service {
     }
 
     @Override
-    public Object findById(String ${variableName}) {
-        return findBy(new HashMap<String, Object>(){
-            {
-                put("${variableName}", ${variableName});
-            }
-        });
+    public Object findById(String ${variableName}Id) {
+        ${className}SelectParameter parameter = new ${className}SelectParameter();
+        parameter.set${className}Id(${variableName}Id);
+        return findBy(parameter);
     }
 
     @Override
-    public Object findBy(Map<String, Object> selectModel) {
-        return ${variableName}Mapper.selectBy(selectModel);
+    public Object findBy(${className}SelectParameter ${variableName}SelectParameter) {
+        return userMapper.selectBy(${variableName}SelectParameter);
     }
 
     @Override
-    public Object findListBy(Map<String, Object> selectModel) {
-        return ${variableName}Mapper.selectListBy(selectModel);
+    public Object findListBy(${className}SelectParameter ${variableName}SelectParameter) {
+        return userMapper.selectListBy(${variableName}SelectParameter);
     }
 
     @Override
-    public int count(Map<String, Object> selectModel) {
-        return ${variableName}Mapper.count(selectModel);
+    public int count(${className}SelectParameter ${variableName}SelectParameter) {
+        return userMapper.count(${variableName}SelectParameter);
     }
 }
 

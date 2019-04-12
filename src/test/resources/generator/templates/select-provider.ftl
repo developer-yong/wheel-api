@@ -1,13 +1,11 @@
 package ${package}.mapper.provider;
 
 import ${package}.core.IProvider;
+import ${package}.model.${className};
+import ${package}.parameter.${className}SelectParameter;
 import org.apache.ibatis.jdbc.SQL;
 
-import java.util.Map;
-
-public class ${className}SelectProvider implements IProvider {
-
-    private String tableName = "${tableName}";
+public class ${className}SelectProvider implements IProvider<${className}, ${className}SelectParameter> {
 
     /**
      * 表名
@@ -16,18 +14,29 @@ public class ${className}SelectProvider implements IProvider {
      */
     @Override
     public String tableName() {
-        return tableName;
+        return "${tableName}";
+    }
+
+    /**
+     * 主键在Model中的变量名
+     *
+     * @return 变量名
+     */
+    @Override
+    public String primaryKeyInModelName() {
+        return "${variableName}Id";
     }
 
     /**
      * 查询单条记录
      *
-     * @param selectModel 查询需要的字段
+     * @param parameter 查询需要的字段
      * @return 查询Sql
      */
-    public String selectOne(Map<String, Object> selectModel) {
+    public String selectOne(${className}SelectParameter parameter) {
         SQL sql = new SQL();
-        sql.SELECT("*").FROM(tableName).WHERE("1=1");
+        sql.SELECT(createSelectSql()).FROM(tableName())
+                .WHERE(createJDBCName(primaryKeyInModelName()) + " = #{" + primaryKeyInModelName() + "}");
         return sql.toString();
     }
 }

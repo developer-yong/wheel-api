@@ -2,12 +2,11 @@ package com.api.service.impl;
 
 import com.api.mapper.UserMapper;
 import com.api.model.User;
+import com.api.parameter.UserSelectParameter;
 import com.api.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String delete(String... userId) {
-        return userMapper.deleteByIds(User.class, userId) > 0 ? "" : "删除失败";
+        return userMapper.deleteByIds(userId) > 0 ? "" : "删除失败";
     }
 
     @Override
@@ -32,26 +31,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Object findById(String userId) {
-        return findBy(new HashMap<String, Object>() {
-            {
-                put("userId", userId);
-            }
-        });
+        UserSelectParameter selectParameter = new UserSelectParameter();
+        selectParameter.setUserId(userId);
+        return findBy(selectParameter);
     }
 
     @Override
-    public Object findBy(Map<String, Object> selectModel) {
-        return userMapper.selectBy(selectModel);
+    public Object findBy(UserSelectParameter userSelectParameter) {
+        return userMapper.selectBy(userSelectParameter);
     }
 
     @Override
-    public Object findListBy(Map<String, Object> selectModel) {
-        return userMapper.selectListBy(selectModel);
+    public Object findListBy(UserSelectParameter userSelectParameter) {
+        return userMapper.selectListBy(userSelectParameter);
     }
 
     @Override
-    public int count(Map<String, Object> selectModel) {
-        return userMapper.count(selectModel);
+    public int count(UserSelectParameter userSelectParameter) {
+        return userMapper.count(userSelectParameter);
     }
 }
 

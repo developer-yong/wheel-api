@@ -2,9 +2,9 @@ package ${package}.controller;
 
 import ${package}.core.IController;
 import ${package}.core.IService;
-import ${package}.core.PageParameter;
-import ${package}.model.${className};
-import ${package}.service.${className}Service;
+import ${package}.model.User;
+import ${package}.parameter.${className}SelectParameter;
+import ${package}.service.UserService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,13 +16,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/${mappingPath}")
-public class ${className}Controller implements IController<${className}, PageParameter> {
+public class ${className}Controller implements IController<${className}, ${className}SelectParameter> {
 
     @Resource
     private ${className}Service ${variableName}Service;
 
     @Override
-    public IService<${className}> createService() {
+    public IService<${className}, ${className}SelectParameter> createService() {
         return ${variableName}Service;
     }
 
@@ -47,7 +47,7 @@ public class ${className}Controller implements IController<${className}, PagePar
     }
 
     @RequestMapping("/list")
-    public Map<String, Object> list(@Valid PageParameter parameter, String keyword, BindingResult result) {
+    public Map<String, Object> list(@Valid ${className}SelectParameter> parameter, String keyword, BindingResult result) {
         return IController.super.list(parameter, keyword, result);
     }
 }
