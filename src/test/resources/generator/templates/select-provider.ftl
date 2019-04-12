@@ -36,7 +36,7 @@ public class ${className}SelectProvider implements IProvider<${className}, ${cla
     public String selectOne(${className}SelectParameter parameter) {
         SQL sql = new SQL();
         sql.SELECT(createSelectSql()).FROM(tableName())
-                .WHERE(createJDBCName(primaryKeyInModelName()) + " = #{" + primaryKeyInModelName() + "}");
+                .WHERE("${variableName}_id = " + parameter.get${className}Id());
         return sql.toString();
     }
 }

@@ -49,7 +49,7 @@ public interface ${className}Mapper {
     /**
      * 查询单条记录
      *
-     * @param ${variableName}SelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 单条记录结果
      */
     @SelectProvider(type = ${className}SelectProvider.class, method = "selectOne")
@@ -58,7 +58,7 @@ public interface ${className}Mapper {
     /**
      * 查询记录列表
      *
-     * @param ${variableName}SelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 记录集合
      */
     @SelectProvider(type = ${className}SelectProvider.class, method = "selectList")
@@ -67,7 +67,7 @@ public interface ${className}Mapper {
     /**
      * 获取记录数量
      *
-     * @param ${variableName}SelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 记录数量
      */
     @SelectProvider(type = ${className}SelectProvider.class, method = "countList")

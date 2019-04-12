@@ -31,9 +31,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Object findById(String userId) {
-        UserSelectParameter selectParameter = new UserSelectParameter();
-        selectParameter.setUserId(userId);
-        return findBy(selectParameter);
+        UserSelectParameter parameter = new UserSelectParameter();
+        parameter.setUserId(userId);
+        return findBy(parameter);
     }
 
     @Override

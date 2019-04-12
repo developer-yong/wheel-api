@@ -47,7 +47,7 @@ public class ${className}Controller implements IController<${className}, ${class
     }
 
     @RequestMapping("/list")
-    public Map<String, Object> list(@Valid ${className}SelectParameter> parameter, String keyword, BindingResult result) {
+    public Map<String, Object> list(@Valid ${className}SelectParameter parameter, String keyword, BindingResult result) {
         return IController.super.list(parameter, keyword, result);
     }
 }

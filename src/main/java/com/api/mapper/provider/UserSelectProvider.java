@@ -30,13 +30,13 @@ public class UserSelectProvider implements IProvider<User, UserSelectParameter> 
     /**
      * 查询单条记录
      *
-     * @param userSelectParameter 查询需要的字段
+     * @param parameter 查询需要的字段
      * @return 查询Sql
      */
-    public String selectOne(UserSelectParameter userSelectParameter) {
+    public String selectOne(UserSelectParameter parameter) {
         SQL sql = new SQL();
         sql.SELECT(createSelectSql()).FROM(tableName())
-                .WHERE(createJDBCName(primaryKeyInModelName()) + " = #{" + primaryKeyInModelName() + "}");
+                .WHERE("user_id = " + parameter.getUserId());
         return sql.toString();
     }
 }

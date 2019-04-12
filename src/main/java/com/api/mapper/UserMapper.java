@@ -49,27 +49,27 @@ public interface UserMapper {
     /**
      * 查询单条记录
      *
-     * @param userSelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 单条记录结果
      */
     @SelectProvider(type = UserSelectProvider.class, method = "selectOne")
-    Map<String, Object> selectBy(UserSelectParameter userSelectParameter);
+    Map<String, Object> selectBy(UserSelectParameter parameter);
 
     /**
      * 查询记录列表
      *
-     * @param userSelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 记录集合
      */
     @SelectProvider(type = UserSelectProvider.class, method = "selectList")
-    List<Map<String, Object>> selectListBy(UserSelectParameter userSelectParameter);
+    List<Map<String, Object>> selectListBy(UserSelectParameter parameter);
 
     /**
      * 获取记录数量
      *
-     * @param userSelectParameter 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 记录数量
      */
     @SelectProvider(type = UserSelectProvider.class, method = "countList")
-    int count(UserSelectParameter userSelectParameter);
+    int count(UserSelectParameter parameter);
 }
