@@ -6,8 +6,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.UUID;
 
 /**
@@ -20,14 +20,30 @@ public interface IProvider<M, P> {
      *
      * @return Sql字符串
      */
-    String tableName();
+    default String tableName() {
+        // 使用Model类名创建表名
+        return camelToUnderline(loadModelClass().getSimpleName());
+    }
 
     /**
      * 表主键在Model中的名称
      *
      * @return 字段名
      */
-    String primaryKeyInModelName();
+    default String primaryKeyInModelName() {
+        String idName = "";
+        try {
+            for (Field field : loadModelClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.getName().contains("Id") || field.getName().contains("id")) {
+                    return field.getName();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return idName;
+    }
 
     //****************************************** 插入、删除、更新数据 ******************************************//
 
@@ -358,5 +374,17 @@ public interface IProvider<M, P> {
             }
         }
         return StringUtils.isEmpty(builder.toString()) ? "1=1" : builder.toString();
+    }
+
+    default Class<?> loadModelClass() {
+        // 获取当前new的对象的泛型的父类类型
+        Type[] interfaces = this.getClass().getGenericInterfaces();
+        for (Type type : interfaces) {
+            if (type instanceof ParameterizedType) {
+                // 获取第一个类型参数的真实类型
+                return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
+            }
+        }
+        return null;
     }
 }

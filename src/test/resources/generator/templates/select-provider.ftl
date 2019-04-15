@@ -8,26 +8,6 @@ import org.apache.ibatis.jdbc.SQL;
 public class ${className}SelectProvider implements IProvider<${className}, ${className}SelectParameter> {
 
     /**
-     * 表名
-     *
-     * @return 表名
-     */
-    @Override
-    public String tableName() {
-        return "${tableName}";
-    }
-
-    /**
-     * 主键在Model中的变量名
-     *
-     * @return 变量名
-     */
-    @Override
-    public String primaryKeyInModelName() {
-        return "${variableName}Id";
-    }
-
-    /**
      * 查询单条记录
      *
      * @param parameter 查询需要的字段

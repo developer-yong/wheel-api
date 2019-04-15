@@ -8,26 +8,6 @@ import org.apache.ibatis.jdbc.SQL;
 public class UserSelectProvider implements IProvider<User, UserSelectParameter> {
 
     /**
-     * 表名
-     *
-     * @return 表名
-     */
-    @Override
-    public String tableName() {
-        return "user";
-    }
-
-    /**
-     * 主键在Model中的变量名
-     *
-     * @return 变量名
-     */
-    @Override
-    public String primaryKeyInModelName() {
-        return "userId";
-    }
-
-    /**
      * 查询单条记录
      *
      * @param parameter 查询需要的字段
