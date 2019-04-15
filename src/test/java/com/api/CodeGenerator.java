@@ -35,14 +35,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
 
     //项目在硬盘上的基础路径
     private static final String PATH_PROJECT = System.getProperty("user.dir");
+    //java文件路径
+    private static final String PATH_SRC_JAVA = PATH_PROJECT + "/src/main/java";
     //模板位置
     private static final String PATH_TEMPLATE = PATH_PROJECT + "/src/test/resources/generator/templates";
 
-    //java文件路径
-    private static final String JAVA_PATH = "/src/main/java";
-
     //包名路径
-    private static final String PACKAGE_NAME = "com.api";
+    private static final String PACKAGE_NAME = CodeGenerator.class.getPackage().getName();
     //生成的Model存放路径
     private static final String PACKAGE_MODEL = PACKAGE_NAME + ".model";
     //生成的Mapper存放路径
@@ -111,7 +110,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
 
         //设置Model配置信息
         JavaModelGeneratorConfiguration modelConfiguration = new JavaModelGeneratorConfiguration();
-        modelConfiguration.setTargetProject(PATH_PROJECT + JAVA_PATH);
+        modelConfiguration.setTargetProject(PATH_SRC_JAVA);
         modelConfiguration.setTargetPackage(PACKAGE_MODEL);
         sContext.setJavaModelGeneratorConfiguration(modelConfiguration);
     }
@@ -321,7 +320,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
         try {
             freemarker.template.Configuration config = createConfiguration();
 
-            File file = new File(PATH_PROJECT + JAVA_PATH + packageConvertPath(filePackagePath) + fileName);
+            File file = new File(PATH_SRC_JAVA + packageConvertPath(filePackagePath) + fileName);
             if (file.getParentFile().exists() || file.getParentFile().mkdirs()) {
                 config.getTemplate(templateName).process(model, new FileWriter(file));
                 if (file.exists()) {
