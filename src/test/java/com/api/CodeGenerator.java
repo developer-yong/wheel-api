@@ -28,7 +28,7 @@ import static org.mybatis.generator.config.PropertyRegistry.COMMENT_GENERATOR_SU
 public class CodeGenerator extends DefaultCommentGenerator {
 
     //JDBC配置
-    private static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false";
+    private static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&characterEncoding=utf8";
     private static final String JDBC_USERNAME = "root";
     private static final String JDBC_PASSWORD = "db123456";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
@@ -58,14 +58,14 @@ public class CodeGenerator extends DefaultCommentGenerator {
     private static final String PACKAGE_SELECT_PARAMETER = PACKAGE_NAME + ".parameter";
 
     //如果表名前带有数据库名需设置此字段，否则设置为空
-    private static final String DB_NAME = "workorder";
+    private static final String DB_NAME = "demo";
     //设置是否根据表名忽略字段前缀
     private static final boolean IGNORE_FIELD_PREFIX = true;
 
     private static final Context sContext = new Context(ModelType.FLAT);
 
     public static void main(String[] args) {
-        generator("user");
+//        generator("user");
     }
 
     private static void generator(String... tableNames) {
@@ -174,7 +174,8 @@ public class CodeGenerator extends DefaultCommentGenerator {
         if (IGNORE_FIELD_PREFIX) {
             ColumnRenamingRule renamingRule = new ColumnRenamingRule();
             //设置忽略字段前缀
-            renamingRule.setSearchString("^" + tableName + (tableName.contains("_") ? "_" : ""));
+            renamingRule.setSearchString("^" + tableName + "_");
+            configuration.setColumnRenamingRule(renamingRule);
         }
 
         configuration.setInsertStatementEnabled(false);
