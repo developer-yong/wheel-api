@@ -1,6 +1,5 @@
 package com.api.core;
 
-import com.api.core.utils.Logger;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -209,6 +208,8 @@ public interface IProvider<M, P> {
         return sql.toString();
     }
 
+
+    //****************************************** 查询列表数据 ******************************************//
 
     /**
      * 创建FormSql

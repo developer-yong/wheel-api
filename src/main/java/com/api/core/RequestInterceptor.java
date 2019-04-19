@@ -1,9 +1,8 @@
 package com.api.core;
 
 import com.alibaba.fastjson.JSON;
-import com.api.core.utils.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +16,7 @@ import java.util.Map;
  * @author coderyong
  */
 @Component
-public class RequestInterceptor extends HandlerInterceptorAdapter {
+public class RequestInterceptor implements HandlerInterceptor {
 
     public static boolean printHeaders = true;
 
@@ -38,23 +37,11 @@ public class RequestInterceptor extends HandlerInterceptorAdapter {
         //获取请求参数信息
         String parameters = request.getParameterMap().isEmpty()
                 ? "" : "Parameters: " + JSON.toJSONString(request.getParameterMap(), true);
+        String fromClient = "FromClient: " + getClientIp(request);
+        String requestUrl = "RequestUrl: http://localhost:" + request.getServerPort() + request.getRequestURI();
 
-        if (request.getRequestURI().equals("/error")) {
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-type", "application/json;charset=UTF-8");
-            response.getWriter().write(JSON.toJSONString(
-                    Response.error(Code.create(Code.ERROR_API, "接口 [" + request.getRequestURI() + "] 不存在"))));
-            return false;
-        } else {
-            if (printHeaders) {
-                Logger.i("FromClient: " + getClientIp(request),
-                        "RequestUrl: http://localhost:" + request.getServerPort() + request.getRequestURI(), headers, parameters);
-            } else {
-                Logger.i("FromClient: " + getClientIp(request),
-                        "RequestUrl: http://localhost:" + request.getServerPort() + request.getRequestURI(), parameters);
-            }
-            return super.preHandle(request, response, handler);
-        }
+        Logger.d(fromClient, requestUrl, printHeaders ? headers + "\n" + parameters : parameters);
+        return HandlerInterceptor.super.preHandle(request, response, handler);
     }
 
     /**
@@ -70,7 +57,7 @@ public class RequestInterceptor extends HandlerInterceptorAdapter {
         }
         if (clientIp == null || clientIp.length() == 0 || "unknown".equalsIgnoreCase(clientIp)) {
             clientIp = request.getRemoteAddr();
-            if (clientIp.equals("127.0.0.1")) {
+            if (clientIp.equals("127.0.0.1") || clientIp.equals("0:0:0:0:0:0:0:1")) {
                 try {
                     //根据网卡取本机配置的IP
                     InetAddress address = InetAddress.getLocalHost();

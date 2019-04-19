@@ -106,7 +106,7 @@
     <logger name="com.alibaba.druid.pool.DruidDataSource" level="WARN"/>
 
     <logger name="com.api.Application" level="WARN"/>
-    <logger name="dev.yong.api" level="DEBUG"/>
+    <logger name="com.api" level="DEBUG"/>
 
     <!--指定最基础的日志输出级别-->
     <root level="INFO">

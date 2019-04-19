@@ -1,5 +1,9 @@
 package com.api.core;
 
+import com.alibaba.fastjson.JSON;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +58,7 @@ public class Response {
      * @return 响应结果对象
      */
     public static Map<String, Object> fail(String message) {
-        return create(Code.create(Code.FAIL_OPERATE, message), null, 0);
+        return create(Code.FAIL_OPERATE.updateMessage(message), null, 0);
     }
 
     /**
@@ -68,13 +72,22 @@ public class Response {
     }
 
     /**
-     * 响应错误结果信息
+     * 响应参数错误结果信息
+     *
+     * @return 响应结果对象
+     */
+    public static Map<String, Object> errorParameter() {
+        return create(Code.ERROR_PARA, null, 0);
+    }
+
+    /**
+     * 响应参数错误结果信息
      *
      * @param message 响应参数错误信息
      * @return 响应结果对象
      */
     public static Map<String, Object> errorParameter(String message) {
-        return create(Code.create(Code.ERROR_PARA, message), null, 0);
+        return create(Code.ERROR_PARA.updateMessage(message), null, 0);
     }
 
     /**
@@ -97,6 +110,26 @@ public class Response {
         }
         result.put("data", data);
         return result;
+    }
+
+    public static void write(HttpServletResponse response, Code code) {
+        try {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-type", "application/json;charset=UTF-8");
+            response.getWriter().write(JSON.toJSONString(error(code)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void write(HttpServletResponse response, Object data) {
+        try {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-type", "application/json;charset=UTF-8");
+            response.getWriter().write(JSON.toJSONString(data));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

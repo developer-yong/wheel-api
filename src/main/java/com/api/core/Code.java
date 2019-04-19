@@ -1,7 +1,5 @@
 package com.api.core;
 
-import org.springframework.util.StringUtils;
-
 /**
  * @author coderyong
  */
@@ -12,7 +10,7 @@ public enum Code {
     ERROR(-1, "未知错误"),
     ERROR_PARA(400, "参数错误"),
     ERROR_PARA_FILE(401, "文件错误"),
-    ERROR_API(404, "接口错误"),
+    ERROR_API(404, "错误的访问路径"),
     FAIL_OPERATE(405, "操作失败，请稍后重试!"),
 
     ERROR_SERVER(500, "服务器内部错误"),
@@ -36,20 +34,16 @@ public enum Code {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public Code updateMessage(String message) {
+        if (message != null && message.length() > 0) {
+            this.message = message;
+        }
+        return this;
     }
 
     public static Code create(int code, String message) {
         CUSTOM.code = code;
         CUSTOM.message = message;
         return CUSTOM;
-    }
-
-    public static Code create(Code code, String message) {
-        if (!StringUtils.isEmpty(message)) {
-            code.message = message;
-        }
-        return code;
     }
 }

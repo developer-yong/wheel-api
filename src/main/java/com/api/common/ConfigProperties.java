@@ -1,4 +1,4 @@
-package com.api.core.config;
+package com.api.common;
 
 import org.springframework.util.ResourceUtils;
 

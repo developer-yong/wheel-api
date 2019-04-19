@@ -1,17 +1,25 @@
-package com.api.core.config;
+package com.api.core;
 
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.wrapper.MapWrapper;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
+import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
 @Configuration
-public class MybatisConfig {
+public class MybatisConfiguration {
+
+    @Bean
+    public static MapperScannerConfigurer mapperScannerConfigurer() {
+        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+        mapperScannerConfigurer.setBasePackage("com.api.mapper");
+        return mapperScannerConfigurer;
+    }
 
     @Bean
     public ConfigurationCustomizer mybatisConfigurationCustomizer() {
@@ -27,44 +35,25 @@ public class MybatisConfig {
 
         @Override
         public ObjectWrapper getWrapperFor(MetaObject metaObject, Object object) {
-            return new MapWrapper(metaObject, (Map) object){
+            return new MapWrapper(metaObject, (Map) object) {
                 @Override
                 public String findProperty(String name, boolean useCamelCaseMapping) {
-                    if(useCamelCaseMapping){
+                    if (useCamelCaseMapping) {
                         //下划线转驼峰式
-                        return underlineToCamelString(name);
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < name.length(); i++) {
+                            char c = name.charAt(i);
+                            if (i > 0 && c == '_') {
+                                sb.append(Character.toUpperCase(name.charAt(++i)));
+                            } else {
+                                sb.append(Character.toLowerCase(c));
+                            }
+                        }
+                        return sb.toString();
                     }
                     return name;
                 }
             };
         }
     }
-
-    /**
-     * 获取驼峰式字符串
-     *
-     * @param str 原字符串
-     * @return 驼峰式字符串
-     */
-    private static String underlineToCamelString(String str) {
-        StringBuilder sb = new StringBuilder();
-        boolean nextUpperCase = false;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (c == '_') {
-                if (sb.length() > 0) {
-                    nextUpperCase = true;
-                }
-            } else {
-                if (nextUpperCase) {
-                    sb.append(Character.toUpperCase(c));
-                    nextUpperCase = false;
-                } else {
-                    sb.append(Character.toLowerCase(c));
-                }
-            }
-        }
-        return sb.toString();
-    }
-
 }
