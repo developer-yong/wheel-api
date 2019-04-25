@@ -28,7 +28,7 @@ import static org.mybatis.generator.config.PropertyRegistry.COMMENT_GENERATOR_SU
 public class CodeGenerator extends DefaultCommentGenerator {
 
     //JDBC配置
-    private static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&characterEncoding=utf8";
+    private static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&characterEncoding=utf8&serverTimezone=UTC";
     private static final String JDBC_USERNAME = "root";
     private static final String JDBC_PASSWORD = "db123456";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
@@ -70,15 +70,14 @@ public class CodeGenerator extends DefaultCommentGenerator {
 
     private static void generator(String... tableNames) {
         for (String tableName : tableNames) {
-            String modelName = getCamelString(tableName.replace(DB_NAME + "_", ""), true);
-            genModel(tableName, modelName);
+            genModel(tableName);
             String mappingPath = tableName.replace(DB_NAME + "_", "").replaceAll("_", "/");
-            genController(modelName, mappingPath);
-            genService(modelName);
-            genServiceImpl(modelName);
-            genMapper(modelName);
-            genProvider(tableName, modelName);
-            genSelectParameter(modelName);
+            genController(tableName, mappingPath);
+            genService(tableName);
+            genServiceImpl(tableName);
+            genMapper(tableName);
+            genProvider(tableName);
+            genSelectParameter(tableName);
         }
     }
 
@@ -127,10 +126,10 @@ public class CodeGenerator extends DefaultCommentGenerator {
      * @param tableName 数据表名称
      * @link https://www.cnblogs.com/maanshancss/p/6027999.html
      */
-    private static void genModel(String tableName, String modelName) {
+    private static void genModel(String tableName) {
         init();
         //添加数据表配置信息
-        sContext.addTableConfiguration(createTableConfiguration(tableName, modelName));
+        sContext.addTableConfiguration(createTableConfiguration(tableName, createModelNameByTableName(tableName)));
 
         List<String> warnings;
         MyBatisGenerator generator;
@@ -203,13 +202,14 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model 的 Provider 类
      *
-     * @param modelName 指定Model类名
+     * @param tableName 指定表名
      */
-    private static void genProvider(String tableName, String modelName) {
+    private static void genProvider(String tableName) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("tableName", tableName);
         model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_PROVIDER, modelName + "SelectProvider.java", "select-provider.ftl");
@@ -218,12 +218,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model 的 Mapper 类
      *
-     * @param modelName 指定Model类名
+     * @param tableName 指定表名
      */
-    private static void genMapper(String modelName) {
+    private static void genMapper(String tableName) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_MAPPER, modelName + "Mapper.java", "mapper.ftl");
@@ -232,12 +233,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model 的 Service 类
      *
-     * @param modelName 指定Model类名
+     * @param tableName 指定表名
      */
-    private static void genService(String modelName) {
+    private static void genService(String tableName) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
-        model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("className", createModelNameByTableName(tableName));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_SERVICE, modelName + "Service.java", "service.ftl");
@@ -246,12 +248,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model 的 ServiceImpl 类
      *
-     * @param modelName 指定Model类名
+     * @param tableName 指定表名
      */
-    private static void genServiceImpl(String modelName) {
+    private static void genServiceImpl(String tableName) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_SERVICE_IMPL, modelName + "ServiceImpl.java", "service-impl.ftl");
@@ -260,12 +263,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model 的 SelectParameter 类
      *
-     * @param modelName 指定Model类名
+     * @param tableName 指定表名
      */
-    private static void genSelectParameter(String modelName) {
+    private static void genSelectParameter(String tableName) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_SELECT_PARAMETER, modelName + "SelectParameter.java", "select-parameter.ftl");
@@ -274,14 +278,15 @@ public class CodeGenerator extends DefaultCommentGenerator {
     /**
      * 生成指定 Model、MappingPath 的 Controller
      *
-     * @param modelName   指定Model类名
+     * @param tableName   指定表名
      * @param mappingPath 指定Controller请求路径
      */
-    private static void genController(String modelName, String mappingPath) {
+    private static void genController(String tableName, String mappingPath) {
+        String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("mappingPath", mappingPath);
         model.put("className", modelName);
-        model.put("variableName", getCamelString(modelName, false));
+        model.put("variableName", getCamelString(tableName, false));
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_CONTROLLER, modelName + "Controller.java", "controller.ftl");
@@ -342,6 +347,16 @@ public class CodeGenerator extends DefaultCommentGenerator {
      */
     private static String packageConvertPath(String packageName) {
         return String.format("/%s/", packageName.contains(".") ? packageName.replaceAll("\\.", "/") : packageName);
+    }
+
+    /**
+     * 创建Model类名
+     *
+     * @param tableName 表名
+     * @return Model类名
+     */
+    private static String createModelNameByTableName(String tableName) {
+        return getCamelString(tableName.replace(DB_NAME + "_", ""), true);
     }
 
     /**

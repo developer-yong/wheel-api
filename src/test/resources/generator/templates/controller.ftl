@@ -2,9 +2,9 @@ package ${package}.controller;
 
 import ${package}.core.IController;
 import ${package}.core.IService;
-import ${package}.model.User;
+import ${package}.model.${className};
 import ${package}.parameter.${className}SelectParameter;
-import ${package}.service.UserService;
+import ${package}.service.${className}Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
