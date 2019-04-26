@@ -31,24 +31,22 @@ public class ${className}ServiceImpl implements ${className}Service {
 
     @Override
     public Object findById(String ${variableName}Id) {
-        ${className}SelectParameter parameter = new ${className}SelectParameter();
-        parameter.set${className}Id(${variableName}Id);
-        return findBy(parameter);
+        return ${variableName}Mapper.selectBy(new ${className}SelectParameter(${variableName}Id));
     }
 
     @Override
     public Object findBy(${className}SelectParameter ${variableName}SelectParameter) {
-        return userMapper.selectBy(${variableName}SelectParameter);
+        return ${variableName}Mapper.selectBy(${variableName}SelectParameter);
     }
 
     @Override
     public Object findListBy(${className}SelectParameter ${variableName}SelectParameter) {
-        return userMapper.selectListBy(${variableName}SelectParameter);
+        return ${variableName}Mapper.selectListBy(${variableName}SelectParameter);
     }
 
     @Override
     public int count(${className}SelectParameter ${variableName}SelectParameter) {
-        return userMapper.count(${variableName}SelectParameter);
+        return ${variableName}Mapper.count(${variableName}SelectParameter);
     }
 }
 
