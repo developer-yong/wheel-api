@@ -23,14 +23,13 @@ public interface IController<M, P> {
 
 
     default Map<String, Object> save(@Valid M m, BindingResult result) {
-        IService<M, P> service = createService();
         //判断是否有错误验证信息
         if (result != null && result.hasErrors()) {
             ObjectError error = result.getAllErrors().get(0);
             return Response.errorParameter(error.getDefaultMessage());
         }
         //获取保存信息，如没有信息则保存成功
-        String message = service.save(m);
+        String message = createService().save(m);
         return StringUtils.isEmpty(message) ? Response.success(m) : Response.fail(message);
     }
 
@@ -62,7 +61,8 @@ public interface IController<M, P> {
         if (result != null && result.hasErrors()) {
             ObjectError error = result.getAllErrors().get(0);
             //更操作只验证不为空的数据
-            if (!"NotNull".equals(error.getCode()) && !"NotEmpty".equals(error.getCode())) {
+            if (!"NotNull".equals(error.getCode()) && !"NotEmpty".equals(error.getCode())
+                    && !"NotBlank".equals(error.getCode())) {
                 return Response.errorParameter(error.getDefaultMessage());
             }
         }

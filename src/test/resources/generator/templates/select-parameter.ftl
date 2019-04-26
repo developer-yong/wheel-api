@@ -6,6 +6,9 @@ public class ${className}SelectParameter extends SelectParameter {
 
     private String ${variableName}Id;
 
+    public ${className}SelectParameter() {
+    }
+
     public ${className}SelectParameter(String ${variableName}Id) {
         this.${variableName}Id = ${variableName}Id;
     }
