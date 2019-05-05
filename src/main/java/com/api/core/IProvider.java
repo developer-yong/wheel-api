@@ -62,9 +62,11 @@ public interface IProvider<M, P> {
             if (isInsert) {
                 //设置主键的默认值
                 Field primaryKeyField = clazz.getDeclaredField(primaryKeyInModelName());
-                if (ObjectUtils.isEmpty(primaryKeyField.get(m))) {
+                if (primaryKeyField != null) {
                     primaryKeyField.setAccessible(true);
-                    primaryKeyField.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
+                    if (ObjectUtils.isEmpty(primaryKeyField.get(m))) {
+                        primaryKeyField.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
+                    }
                 }
                 //设置创建时间的默认值
                 Field createdAtField = clazz.getDeclaredField("createdAt");
