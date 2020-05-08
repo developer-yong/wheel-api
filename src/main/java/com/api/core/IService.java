@@ -13,11 +13,11 @@ public interface IService<M, P> {
     /**
      * 保存单条记录
      *
-     * @param m 记录对象信息
+     * @param ms 记录对象集合信息
      * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
      */
     @Transactional
-    default String save(M m) {
+    default String save(M... ms) {
         return null;
     }
 

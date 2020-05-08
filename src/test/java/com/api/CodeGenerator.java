@@ -60,7 +60,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
     //如果表名前带有数据库名需设置此字段，否则设置为空
     private static final String DB_NAME = "demo";
     //设置是否根据表名忽略字段前缀
-    private static final boolean IGNORE_FIELD_PREFIX = true;
+    private static final boolean IGNORE_FIELD_PREFIX = false;
 
     private static final Context sContext = new Context(ModelType.FLAT);
 

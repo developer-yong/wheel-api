@@ -15,8 +15,8 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public String save(User user) {
-        return userMapper.insert(user) > 0 ? "" : "保存失败";
+    public String save(User... users) {
+        return userMapper.inserts(users) > 0 ? "" : "保存失败";
     }
 
     @Override

@@ -11,22 +11,13 @@ import java.util.Map;
 public interface UserMapper {
 
     /**
-     * 插入单条记录
-     *
-     * @param user 插入对象
-     * @return 影响数据条数
-     */
-    @InsertProvider(type = UserSelectProvider.class, method = "insert")
-    int insert(User user);
-
-    /**
-     * 插入多条记录
+     * 插入单条或多条记录
      *
      * @param users 插入对象数组
      * @return 影响数据条数
      */
     @InsertProvider(type = UserSelectProvider.class, method = "inserts")
-    int inserts(@Param("arg0") User... users);
+    int inserts(@Param("ms") User... users);
 
     /**
      * 删除单条或多条记录
@@ -35,7 +26,7 @@ public interface UserMapper {
      * @return 影响数据条数
      */
     @DeleteProvider(type = UserSelectProvider.class, method = "deleteByIds")
-    int deleteByIds(@Param("arg0") String... userIds);
+    int deleteByIds(@Param("primaryKeys") String... userIds);
 
     /**
      * 更新单条记录

@@ -11,22 +11,13 @@ import java.util.Map;
 public interface ${className}Mapper {
 
     /**
-     * 插入单条记录
-     *
-     * @param ${variableName} 插入对象
-     * @return 影响数据条数
-     */
-    @InsertProvider(type = ${className}SelectProvider.class, method = "insert")
-    int insert(${className} ${variableName});
-
-    /**
-     * 插入多条记录
+     * 插入单条或多条记录
      *
      * @param ${variableName}s 插入对象数组
      * @return 影响数据条数
      */
     @InsertProvider(type = ${className}SelectProvider.class, method = "inserts")
-    int inserts(@Param("arg0") ${className}... ${variableName}s);
+    int inserts(@Param("ms") ${className}... ${variableName}s);
 
     /**
      * 删除单条或多条记录
@@ -35,7 +26,7 @@ public interface ${className}Mapper {
      * @return 影响数据条数
      */
     @DeleteProvider(type = ${className}SelectProvider.class, method = "deleteByIds")
-    int deleteByIds(@Param("arg0") String... ${variableName}Ids);
+    int deleteByIds(@Param("primaryKeys") String... ${variableName}Ids);
 
     /**
      * 更新单条记录
