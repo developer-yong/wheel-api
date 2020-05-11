@@ -13,6 +13,10 @@ public enum Code {
     ERROR_API(404, "错误的访问路径"),
     FAIL_OPERATE(405, "操作失败，请稍后重试!"),
 
+    ERROR_DATA_DUPLICATION(406, "数据重复"),
+    ERROR_REPEAT_INSERTION(407, "信息已存在"),
+    ERROR_USER_NO_LOGIN(460, "用户没有登录!"),
+
     ERROR_SERVER(500, "服务器内部错误"),
 
     CUSTOM(0, "请求失败");

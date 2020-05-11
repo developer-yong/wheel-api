@@ -6,6 +6,8 @@ import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.api.dom.java.Field;
+import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
+import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultCommentGenerator;
 import org.mybatis.generator.internal.DefaultShellCallback;
@@ -65,7 +67,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
     private static final Context sContext = new Context(ModelType.FLAT);
 
     public static void main(String[] args) {
-//        generator("user");
+        generator("user");
     }
 
     private static void generator(String... tableNames) {
@@ -188,6 +190,17 @@ public class CodeGenerator extends DefaultCommentGenerator {
     }
 
     @Override
+    public void addModelClassComment(TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+        //Model添加注解
+        topLevelClass.addImportedType(
+                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.JDBCField"));
+        topLevelClass.addImportedType(
+                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.TableName"));
+        topLevelClass.addAnnotation("@TableName(value = \"" + introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime() + "\")");
+        super.addModelClassComment(topLevelClass, introspectedTable);
+    }
+
+    @Override
     public void addFieldComment(Field field, IntrospectedTable introspectedTable, IntrospectedColumn introspectedColumn) {
         if (!StringUtils.isEmpty(introspectedColumn.getRemarks())) {
             StringBuilder sb = new StringBuilder();
@@ -197,6 +210,16 @@ public class CodeGenerator extends DefaultCommentGenerator {
             field.addJavaDocLine(sb.toString().replace("\n", " "));
             field.addJavaDocLine(" */");
         }
+
+        if (introspectedTable.getPrimaryKeyColumns().contains(introspectedColumn)) {
+            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
+                    + "\", type = \"" + introspectedColumn.getJdbcTypeName()
+                    + "\", isIdentity = true)");
+        } else {
+            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
+                    + "\", type = \"" + introspectedColumn.getJdbcTypeName() + "\")");
+        }
+        super.addFieldComment(field, introspectedTable, introspectedColumn);
     }
 
     /**

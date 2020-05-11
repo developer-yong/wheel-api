@@ -11,13 +11,13 @@ import java.util.List;
 public interface IService<M, P> {
 
     /**
-     * 保存单条记录
+     * 保存记录
      *
-     * @param ms 记录对象集合信息
+     * @param m 记录对象信息
      * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
      */
     @Transactional
-    default String save(M... ms) {
+    default String save(M m) {
         return null;
     }
 
@@ -87,7 +87,7 @@ public interface IService<M, P> {
     /**
      * 获取主键值
      * <p>
-     *      默认取 Model 中第一个包含有 Id 或者 id 的变量值，如果主键为特殊变量名需在实现类中重写此方法返回主键值
+     * 默认取 Model 中第一个包含有 Id 或者 id 的变量值，如果主键为特殊变量名需在实现类中重写此方法返回主键值
      * </P>
      *
      * @param m Model对象

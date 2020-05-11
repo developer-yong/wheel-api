@@ -26,11 +26,11 @@ public class MybatisConfiguration {
         return configuration -> configuration.setObjectWrapperFactory(new MapWrapperFactory());
     }
 
-    class MapWrapperFactory implements ObjectWrapperFactory {
+    static class MapWrapperFactory implements ObjectWrapperFactory {
 
         @Override
         public boolean hasWrapperFor(Object object) {
-            return object != null && object instanceof Map;
+            return object instanceof Map;
         }
 
         @Override

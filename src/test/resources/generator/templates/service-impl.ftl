@@ -15,8 +15,8 @@ public class ${className}ServiceImpl implements ${className}Service {
     private ${className}Mapper ${variableName}Mapper;
 
     @Override
-    public String save(${className}... ${variableName}s) {
-        return ${variableName}Mapper.inserts(${variableName}s) > 0 ? "" : "保存失败";
+    public String save(${className} ${variableName}) {
+        return ${variableName}Mapper.inserts(${variableName}) > 0 ? "" : "保存失败";
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.api.core;
 
+import com.api.model.annotation.JDBCField;
+import com.api.model.annotation.TableName;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -21,21 +23,22 @@ public interface IProvider<M, P> {
      */
     default String tableName() {
         // 使用Model类名创建表名
-        return camelToUnderline(loadModelClass().getSimpleName());
+        return loadModelClass().getAnnotation(TableName.class).value();
     }
 
     /**
-     * 表主键在Model中的名称
+     * 表主键
      *
-     * @return 字段名
+     * @return 主键名
      */
-    default String primaryKeyInModelName() {
+    default String primaryKey() {
         String idName = "";
         try {
             for (Field field : loadModelClass().getDeclaredFields()) {
                 field.setAccessible(true);
-                if (field.getName().contains("Id") || field.getName().contains("id")) {
-                    return field.getName();
+                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+                if (jdbcField.isIdentity()) {
+                    return jdbcField.name();
                 }
             }
         } catch (Exception e) {
@@ -46,10 +49,6 @@ public interface IProvider<M, P> {
 
     //****************************************** 插入、删除、更新数据 ******************************************//
 
-    default String createJDBCName(String fieldName) {
-        return camelToUnderline(fieldName);
-    }
-
     /**
      * 创建默认值
      *
@@ -59,27 +58,23 @@ public interface IProvider<M, P> {
     default void createDefaultValue(M m, boolean isInsert) {
         try {
             Class<?> clazz = m.getClass();
-            if (isInsert) {
-                //设置主键的默认值
-                Field primaryKeyField = clazz.getDeclaredField(primaryKeyInModelName());
-                if (primaryKeyField != null) {
-                    primaryKeyField.setAccessible(true);
-                    if (ObjectUtils.isEmpty(primaryKeyField.get(m))) {
-                        primaryKeyField.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
+            Field[] declaredFields = clazz.getDeclaredFields();
+            for (Field field : declaredFields) {
+                field.setAccessible(true);
+                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+                if (jdbcField != null && ObjectUtils.isEmpty(field.get(m))) {
+                    //设置主键默认值
+                    if (jdbcField.isIdentity()) {
+                        field.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
                     }
-                }
-                //设置创建时间的默认值
-                Field createdAtField = clazz.getDeclaredField("createdAt");
-                if (ObjectUtils.isEmpty(createdAtField)) {
-                    createdAtField.setAccessible(true);
-                    createdAtField.set(m, System.currentTimeMillis() / 1000);
-                }
-            } else {
-                //设置创建时间的默认值
-                Field updatedAtField = clazz.getDeclaredField("updatedAt");
-                if (ObjectUtils.isEmpty(updatedAtField)) {
-                    updatedAtField.setAccessible(true);
-                    updatedAtField.set(m, System.currentTimeMillis() / 1000);
+                    //设置创建时间默认值
+                    if ("created_at".equals(jdbcField.name()) && isInsert) {
+                        field.set(m, System.currentTimeMillis() / 1000);
+                    }
+                    //设置更新时间默认值
+                    if ("updated_at".equals(jdbcField.name()) && !isInsert) {
+                        field.set(m, System.currentTimeMillis() / 1000);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -100,8 +95,9 @@ public interface IProvider<M, P> {
         for (Field field : m.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
-                if (!ObjectUtils.isEmpty(field.get(m))) {
-                    sql.VALUES(createJDBCName(field.getName()), "#{" + field.getName() + "}");
+                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+                if (!ObjectUtils.isEmpty(field.get(m)) && jdbcField != null) {
+                    sql.VALUES(jdbcField.name(), "#{" + field.getName() + "}");
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -130,24 +126,27 @@ public interface IProvider<M, P> {
             for (int j = 0; j < fields.length; j++) {
                 Field field = fields[j];
                 field.setAccessible(true);
-                try {
-                    String jdbcName = createJDBCName(field.getName());
-                    if (i == 0) {
-                        columns.append(j == 0 ? jdbcName : ", " + jdbcName);
+                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+                if (jdbcField != null) {
+                    try {
+                        String jdbcName = jdbcField.name();
+                        if (i == 0) {
+                            columns.append(j == 0 ? jdbcName : ", " + jdbcName);
+                        }
+                        if (j > 0) {
+                            values.append(", ");
+                        }
+                        Object value = field.get(m);
+                        if (value != null && field.getType() == String.class) {
+                            values.append("'").append(field.get(m)).append("'");
+                        } else if (value == null && field.getType() == Integer.class) {
+                            values.append(0);
+                        } else {
+                            values.append(field.get(m));
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                    if (j > 0) {
-                        values.append(", ");
-                    }
-                    Object value = field.get(m);
-                    if (value != null && field.getType() == String.class) {
-                        values.append("'").append(field.get(m)).append("'");
-                    } else if (value == null && field.getType() == Integer.class) {
-                        values.append(0);
-                    } else {
-                        values.append(field.get(m));
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
                 }
             }
             values.append(")");
@@ -178,7 +177,7 @@ public interface IProvider<M, P> {
             }
             builder.append("'").append(primaryKey).append("'");
         }
-        sql.WHERE(createJDBCName(primaryKeyInModelName()) + " IN (" + builder.toString() + ")");
+        sql.WHERE(primaryKey() + " IN (" + builder.toString() + ")");
         return sql.toString();
     }
 
@@ -195,12 +194,12 @@ public interface IProvider<M, P> {
             field.setAccessible(true);
             try {
                 createDefaultValue(m, false);
-                if (!ObjectUtils.isEmpty(field.get(m))) {
-                    String jdbcName = createJDBCName(field.getName());
-                    if (primaryKeyInModelName().equals(field.getName())) {
-                        sql.WHERE(jdbcName + " = #{" + field.getName() + "}");
+                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+                if (!ObjectUtils.isEmpty(field.get(m)) && jdbcField != null) {
+                    if (jdbcField.isIdentity()) {
+                        sql.WHERE(jdbcField.name() + " = #{" + field.getName() + "}");
                     } else {
-                        sql.SET(jdbcName + " = #{" + field.getName() + "}");
+                        sql.SET(jdbcField.name() + " = #{" + field.getName() + "}");
                     }
                 }
             } catch (IllegalAccessException e) {
@@ -320,24 +319,6 @@ public interface IProvider<M, P> {
             sql.WHERE(whereSql);
         }
         return sql.toString();
-    }
-
-    /**
-     * 驼峰式转下滑线字符串
-     *
-     * @param str 原字符串
-     * @return 下划线字符串
-     */
-    static String camelToUnderline(String str) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (i > 0 && Character.isUpperCase(c)) {
-                sb.append("_");
-            }
-            sb.append(Character.toLowerCase(c));
-        }
-        return sb.toString();
     }
 
     /**

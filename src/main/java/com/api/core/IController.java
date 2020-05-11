@@ -108,6 +108,6 @@ public interface IController<M, P> {
             return Response.fail((String) resultData);
         }
         int count = service.count(parameter);
-        return Response.success(resultData, count < ((List) resultData).size() ? ((List) resultData).size() : count);
+        return Response.success(resultData, Math.max(count, ((List) resultData).size()));
     }
 }

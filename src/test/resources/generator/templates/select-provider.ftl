@@ -8,6 +8,17 @@ import org.apache.ibatis.jdbc.SQL;
 public class ${className}SelectProvider implements IProvider<${className}, ${className}SelectParameter> {
 
     /**
+     * 创建列表查询条件语句
+     *
+     * @param parameter 查询参数
+     * @return 条件语句
+     */
+    @Override
+    public String createWhereSql(UserSelectParameter parameter) {
+        return IProvider.getLikeSql(parameter.getKeyword(), "", "");
+    }
+
+    /**
      * 查询单条记录
      *
      * @param parameter 查询需要的字段
