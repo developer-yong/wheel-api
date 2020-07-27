@@ -6,9 +6,12 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface JDBCField {
+
     String name();
 
     String type();
 
-    boolean isIdentity() default false;
+    boolean notNull() default false;
+
+    String defaultValue() default "";
 }

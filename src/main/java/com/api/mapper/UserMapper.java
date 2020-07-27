@@ -1,66 +1,64 @@
 package com.api.mapper;
 
-import com.api.mapper.provider.UserSelectProvider;
+import com.api.mapper.provider.UserSqlProvider;
 import com.api.model.User;
-import com.api.parameter.UserSelectParameter;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 
 public interface UserMapper {
 
     /**
-     * 插入单条或多条记录
+     * 插入单条User记录
      *
-     * @param users 插入对象数组
-     * @return 影响数据条数
+     * @param user User数据实体对象
+     * @return 影响记录条数（0-失败，1-成功）
      */
-    @InsertProvider(type = UserSelectProvider.class, method = "inserts")
-    int inserts(@Param("ms") User... users);
+    @InsertProvider(type = UserSqlProvider.class, method = "insert")
+    int insert(User user);
 
     /**
-     * 删除单条或多条记录
+     * 删除单条或多条User记录
      *
-     * @param userIds 主键数组
-     * @return 影响数据条数
+     * @param userIds User主键数组
+     * @return 影响记录条数（0-失败，大于0-成功）
      */
-    @DeleteProvider(type = UserSelectProvider.class, method = "deleteByIds")
+    @DeleteProvider(type = UserSqlProvider.class, method = "deleteByIds")
     int deleteByIds(@Param("primaryKeys") String... userIds);
 
     /**
-     * 更新单条记录
+     * 更新单条User记录
      *
-     * @param user 更新对象
-     * @return 影响数据条数
+     * @param user User数据实体对象
+     * @return 影响记录条数（0-失败，1-成功）
      */
-    @UpdateProvider(type = UserSelectProvider.class, method = "update")
+    @UpdateProvider(type = UserSqlProvider.class, method = "update")
     int update(User user);
 
     /**
-     * 查询单条记录
+     * 查询单条User记录
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 单条记录结果
+     * @param parameter 查询条件参数对象
+     * @return User记录结果
      */
-    @SelectProvider(type = UserSelectProvider.class, method = "selectOne")
-    Map<String, Object> selectBy(UserSelectParameter parameter);
+    @SelectProvider(type = UserSqlProvider.class, method = "selectOne")
+    User selectBy(User parameter);
 
     /**
-     * 查询记录列表
+     * 查询User记录列表
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 记录集合
+     * @param parameter 查询条件参数对象
+     * @return User记录列表结果
      */
-    @SelectProvider(type = UserSelectProvider.class, method = "selectList")
-    List<Map<String, Object>> selectListBy(UserSelectParameter parameter);
+    @SelectProvider(type = UserSqlProvider.class, method = "selectList")
+    List<User> selectListBy(User parameter);
 
     /**
-     * 获取记录数量
+     * 统计User记录列表数量
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 记录数量
+     * @param parameter 查询条件参数对象
+     * @return User记录列表数量
      */
-    @SelectProvider(type = UserSelectProvider.class, method = "countList")
-    int count(UserSelectParameter parameter);
+    @SelectProvider(type = UserSqlProvider.class, method = "countList")
+    int count(User parameter);
 }

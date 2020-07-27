@@ -2,52 +2,90 @@ package com.api.controller;
 
 import com.api.core.IController;
 import com.api.core.IService;
+import com.api.core.Parameter;
+import com.api.core.Response;
 import com.api.model.User;
-import com.api.parameter.UserSelectParameter;
 import com.api.service.UserService;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.Map;
+import java.util.List;
 
+/**
+ * User接口管理
+ */
 @RestController
 @RequestMapping("/api/user")
-public class UserController implements IController<User, UserSelectParameter> {
+public class UserController implements IController<User> {
 
+    /**
+     * User业务逻辑处理实现对象
+     */
     @Resource
     private UserService userService;
 
     @Override
-    public IService<User, UserSelectParameter> createService() {
+    public IService<User> createService() {
         return userService;
     }
 
-    @RequestMapping("/save")
-    public Map<String, Object> save(@Valid User user, BindingResult result) {
+    /**
+     * 添加User
+     *
+     * @param user User数据实体对象
+     * @param result 字段校验绑定结果对象
+     * @return User添加响应结果
+     */
+    @PostMapping("/save")
+    public Response<User> save(@Valid User user, BindingResult result) {
         return IController.super.save(user, result);
     }
 
-    @RequestMapping("/delete")
-    public Map<String, Object> delete(@RequestParam String... userId) {
+    /**
+     * 删除User
+     *
+     * @param userId User主键标识（支持数组）
+     * @return User删除响应结果
+     */
+    @GetMapping("/delete")
+    public Response<String> delete(@RequestParam String... userId) {
         return IController.super.delete(userId);
     }
 
-    @RequestMapping("/update")
-    public Map<String, Object> update(@Valid User user, BindingResult result) {
+    /**
+     * 修改User
+     *
+     * @param user User数据实体对象
+     * @param result 字段校验绑定结果对象
+     * @return User修改响应结果
+     */
+    @PostMapping("/update")
+    public Response<String> update(@Valid User user, BindingResult result) {
         return IController.super.update(user, result);
     }
 
-    @RequestMapping("/detail")
-    public Map<String, Object> detail(String userId) {
+    /**
+     * 查询User详情
+     *
+     * @param userId User主键标识
+     * @return User详情查询响应结果
+     */
+    @GetMapping("/detail")
+    public Response<User> detail(String userId) {
         return IController.super.detail(userId);
     }
 
-    @RequestMapping("/list")
-    public Map<String, Object> list(@Valid UserSelectParameter parameter, String keyword, BindingResult result) {
-        return IController.super.list(parameter, keyword, result);
+    /**
+     * 查询User列表
+     *
+     * @param parameter 查询参数字段对象
+     * @param result    字段校验绑定结果对象
+     * @return User列表查询响应结果
+     */
+    @GetMapping("/list")
+    public Response<List<User>> list(@Valid User parameter, BindingResult result) {
+        return IController.super.list(parameter, result);
     }
 }

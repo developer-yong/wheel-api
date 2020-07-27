@@ -1,19 +1,23 @@
 package com.api.core;
 
+import com.api.model.annotation.Table;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
+ * 业务逻辑处理基类
+ *
  * @author coderyong
  */
-public interface IService<M, P> {
+public interface IService<M> {
 
     /**
-     * 保存记录
+     * 添加单条记录
      *
-     * @param m 记录对象信息
+     * @param m 记录字典对象
      * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
      */
     @Transactional
@@ -22,7 +26,27 @@ public interface IService<M, P> {
     }
 
     /**
-     * 删除记录
+     * 添加多条记录
+     *
+     * @param ms 记录字典对象数组
+     * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
+     */
+    @Transactional
+    default String save(M... ms) {
+        StringBuilder messages = new StringBuilder();
+        Stream.of(ms)
+                .parallel()
+                .forEach(m -> {
+                    if (!StringUtils.isEmpty(messages.toString())) {
+                        messages.append(",");
+                    }
+                    messages.append(save(m));
+                });
+        return messages.toString();
+    }
+
+    /**
+     * 删除单条或多条记录
      *
      * @param primaryKeys 记录主键数组
      * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
@@ -33,7 +57,7 @@ public interface IService<M, P> {
     }
 
     /**
-     * 更新单条记录
+     * 修改单条记录
      *
      * @param m 记录对象信息
      * @return 如果有错误信息返回错误提示信息，否则返回空或空字符串
@@ -49,39 +73,28 @@ public interface IService<M, P> {
      * @param primaryKey 记录主键
      * @return 如果有错误信息返回错误提示信息，否则返回单条记录结果
      */
-    default Object findById(String primaryKey) {
-        return null;
-    }
-
-    /**
-     * 查询单条记录
-     *
-     * @param p 查询条件集合对象信息
-     * @return 如果有错误信息返回错误提示信息，否则返回单条记录结果
-     */
-    default Object findBy(P p) {
+    default M findById(String primaryKey) {
         return null;
     }
 
     /**
      * 查询记录列表
      *
-     * @param p 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 如果有错误信息返回错误提示信息，否则返回记录集合
      */
-    default Object findListBy(P p) {
+    default List<M> findListBy(M parameter) {
         return null;
     }
 
     /**
      * 查询记录列表总数
      *
-     * @param p 查询条件集合对象信息
+     * @param parameter 查询条件集合对象信息
      * @return 记录集合总数
      */
-    default int count(P p) {
-        Object list = findListBy(p);
-        return list != null && list instanceof List ? ((List) list).size() : 0;
+    default int count(M parameter) {
+        return 0;
     }
 
     /**
@@ -90,22 +103,20 @@ public interface IService<M, P> {
      * 默认取 Model 中第一个包含有 Id 或者 id 的变量值，如果主键为特殊变量名需在实现类中重写此方法返回主键值
      * </P>
      *
-     * @param m Model对象
+     * @param m 记录字典对象
      * @return 主键值
      */
-    default String getPrimaryKey(M m) {
-        String primaryKey = "";
-        try {
-            for (Field field : m.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                if (field.getName().contains("Id") || field.getName().contains("id")) {
-                    primaryKey = (String) field.get(m);
-                    break;
-                }
+    default String getIdName(M m) {
+        String primaryKey = m.getClass().getAnnotation(Table.class).primaryKey();
+        StringBuilder idName = new StringBuilder();
+        for (int i = 0; i < primaryKey.length(); i++) {
+            char c = primaryKey.charAt(i);
+            if (c == '_') {
+                i++;
+                c = Character.toUpperCase(primaryKey.charAt(i));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            idName.append(c);
         }
-        return primaryKey;
+        return idName.toString();
     }
 }

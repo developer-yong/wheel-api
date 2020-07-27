@@ -3,42 +3,53 @@ package com.api.core;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 /**
+ * 接口控制基类
+ *
  * @author coderyong
  */
-public interface IController<M, P> {
+public interface IController<M> {
 
     /**
-     * 创建数据操作对象 继承自Service
+     * 创建业务实现对象 继承自Service
      *
      * @return IService
      */
-    IService<M, P> createService();
+    IService<M> createService();
 
 
-    default Map<String, Object> save(@Valid M m, BindingResult result) {
+    /**
+     * 添加记录接口控制
+     *
+     * @param m      记录字典对象
+     * @param result 字段校验绑定结果对象
+     */
+    default Response<M> save(@Valid M m, BindingResult result) {
+        IService<M> service = createService();
         //判断是否有错误验证信息
         if (result != null && result.hasErrors()) {
-            ObjectError error = result.getAllErrors().get(0);
-            return Response.errorParameter(error.getDefaultMessage());
+            FieldError error = (FieldError) result.getAllErrors().get(0);
+            if (!error.getField().equals(service.getIdName(m))) {
+                return Response.errorParameter(error.getDefaultMessage());
+            }
         }
         //获取保存信息，如没有信息则保存成功
-        String message = createService().save(m);
+        String message = service.save(m);
         return StringUtils.isEmpty(message) ? Response.success(m) : Response.fail(message);
     }
 
     /**
-     * 删除记录
+     * 删除记录接口控制
      *
-     * @param primaryKeys 主键数组
+     * @param primaryKeys 记录主键数组
      */
-    default Map<String, Object> delete(String... primaryKeys) {
+    default Response<String> delete(String... primaryKeys) {
         if (ObjectUtils.isEmpty(primaryKeys)) {
             return Response.errorParameter();
         }
@@ -48,13 +59,14 @@ public interface IController<M, P> {
     }
 
     /**
-     * 更新记录
+     * 修改记录接口控制
      *
-     * @param m Model
+     * @param m      记录字典对象
+     * @param result 字段校验绑定结果对象
      */
-    default Map<String, Object> update(@Valid M m, BindingResult result) {
-        IService<M, P> service = createService();
-        String primaryKey = service.getPrimaryKey(m);
+    default Response<String> update(@Valid M m, BindingResult result) {
+        IService<M> service = createService();
+        String primaryKey = service.getIdName(m);
         if (StringUtils.isEmpty(primaryKey)) {
             return Response.errorParameter();
         }
@@ -72,16 +84,16 @@ public interface IController<M, P> {
     }
 
     /**
-     * 查询详情信息
+     * 查询记录详情接口控制
      *
-     * @param primaryKey 主键
+     * @param primaryKey 记录主键
      */
-    default Map<String, Object> detail(String primaryKey) {
+    default Response<M> detail(String primaryKey) {
         if (StringUtils.isEmpty(primaryKey)) {
             return Response.errorParameter();
         }
         //获取查询结果信息，如没结果为错误信息返回错误，否则返回查询结果数据
-        Object result = createService().findById(primaryKey);
+        M result = createService().findById(primaryKey);
         if (ObjectUtils.isEmpty(result) || result instanceof String) {
             return Response.fail((String) result);
         }
@@ -89,25 +101,25 @@ public interface IController<M, P> {
     }
 
     /**
-     * 查询列表信息
+     * 查询记录列表接口控制
      *
-     * @param parameter 查询参数
-     * @param keyword   关键字
-     * @param result    验证参数结果
+     * @param parameter 查询参数字段对象
+     * @param result    字段校验绑定结果对象
      */
-    default Map<String, Object> list(@Valid P parameter, String keyword, BindingResult result) {
-        IService<M, P> service = createService();
+    default Response<List<M>> list(@Valid M parameter, BindingResult result) {
+        IService<M> service = createService();
         //判断是否有错误验证信息
         if (result.hasErrors()) {
             ObjectError error = result.getAllErrors().get(0);
-            return Response.errorParameter(error.getDefaultMessage());
+            //更操作只验证不为空的数据
+            if (!"NotNull".equals(error.getCode()) && !"NotEmpty".equals(error.getCode())
+                    && !"NotBlank".equals(error.getCode())) {
+                return Response.errorParameter(error.getDefaultMessage());
+            }
         }
         //获取查询结果信息，如没结果为错误信息返回错误，否则返回查询结果数据
-        Object resultData = service.findListBy(parameter);
-        if (ObjectUtils.isEmpty(result) || resultData instanceof String) {
-            return Response.fail((String) resultData);
-        }
+        List<M> results = service.findListBy(parameter);
         int count = service.count(parameter);
-        return Response.success(resultData, Math.max(count, ((List) resultData).size()));
+        return Response.success(results, Math.max(count, results.size()));
     }
 }

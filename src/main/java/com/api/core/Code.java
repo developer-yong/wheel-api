@@ -1,6 +1,8 @@
 package com.api.core;
 
 /**
+ * 响应状态码封装类
+ *
  * @author coderyong
  */
 public enum Code {

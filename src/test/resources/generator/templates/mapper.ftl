@@ -1,66 +1,64 @@
 package ${package}.mapper;
 
-import ${package}.mapper.provider.${className}SelectProvider;
+import ${package}.mapper.provider.${className}SqlProvider;
 import ${package}.model.${className};
-import ${package}.parameter.${className}SelectParameter;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ${className}Mapper {
 
     /**
-     * 插入单条或多条记录
+     * 插入单条${className}记录
      *
-     * @param ${variableName}s 插入对象数组
-     * @return 影响数据条数
+     * @param ${variableName} ${className}数据实体对象
+     * @return 影响记录条数（0-失败，1-成功）
      */
-    @InsertProvider(type = ${className}SelectProvider.class, method = "inserts")
-    int inserts(@Param("ms") ${className}... ${variableName}s);
+    @InsertProvider(type = ${className}SqlProvider.class, method = "insert")
+    int insert(${className} ${variableName});
 
     /**
-     * 删除单条或多条记录
+     * 删除单条或多条${className}记录
      *
-     * @param ${variableName}Ids 主键数组
-     * @return 影响数据条数
+     * @param ${variableName}Ids ${className}主键数组
+     * @return 影响记录条数（0-失败，大于0-成功）
      */
-    @DeleteProvider(type = ${className}SelectProvider.class, method = "deleteByIds")
+    @DeleteProvider(type = ${className}SqlProvider.class, method = "deleteByIds")
     int deleteByIds(@Param("primaryKeys") String... ${variableName}Ids);
 
     /**
-     * 更新单条记录
+     * 更新单条${className}记录
      *
-     * @param ${variableName} 更新对象
-     * @return 影响数据条数
+     * @param ${variableName} ${className}数据实体对象
+     * @return 影响记录条数（0-失败，1-成功）
      */
-    @UpdateProvider(type = ${className}SelectProvider.class, method = "update")
+    @UpdateProvider(type = ${className}SqlProvider.class, method = "update")
     int update(${className} ${variableName});
 
     /**
-     * 查询单条记录
+     * 查询单条${className}记录
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 单条记录结果
+     * @param parameter 查询条件参数对象
+     * @return ${className}记录结果
      */
-    @SelectProvider(type = ${className}SelectProvider.class, method = "selectOne")
-    Map<String, Object> selectBy(${className}SelectParameter parameter);
+    @SelectProvider(type = ${className}SqlProvider.class, method = "selectOne")
+    ${className} selectBy(${className} parameter);
 
     /**
-     * 查询记录列表
+     * 查询${className}记录列表
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 记录集合
+     * @param parameter 查询条件参数对象
+     * @return ${className}记录列表结果
      */
-    @SelectProvider(type = ${className}SelectProvider.class, method = "selectList")
-    List<Map<String, Object>> selectListBy(${className}SelectParameter parameter);
+    @SelectProvider(type = ${className}SqlProvider.class, method = "selectList")
+    List<${className}> selectListBy(${className} parameter);
 
     /**
-     * 获取记录数量
+     * 统计${className}记录列表数量
      *
-     * @param parameter 查询条件集合对象信息
-     * @return 记录数量
+     * @param parameter 查询条件参数对象
+     * @return ${className}记录列表数量
      */
-    @SelectProvider(type = ${className}SelectProvider.class, method = "countList")
-    int count(${className}SelectParameter parameter);
+    @SelectProvider(type = ${className}SqlProvider.class, method = "countList")
+    int count(${className} parameter);
 }

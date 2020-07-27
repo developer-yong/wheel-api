@@ -1,7 +1,7 @@
 package com.api.core;
 
 import com.api.model.annotation.JDBCField;
-import com.api.model.annotation.TableName;
+import com.api.model.annotation.Table;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -12,9 +12,11 @@ import java.lang.reflect.Type;
 import java.util.UUID;
 
 /**
+ * 数据库操作Sql提供者基类
+ *
  * @author coderyong
  */
-public interface IProvider<M, P> {
+public interface ISqlProvider<M> {
 
     /**
      * 创建FormSql
@@ -22,8 +24,8 @@ public interface IProvider<M, P> {
      * @return Sql字符串
      */
     default String tableName() {
-        // 使用Model类名创建表名
-        return loadModelClass().getAnnotation(TableName.class).value();
+        //获取表名
+        return loadModelClass().getAnnotation(Table.class).name();
     }
 
     /**
@@ -32,53 +34,42 @@ public interface IProvider<M, P> {
      * @return 主键名
      */
     default String primaryKey() {
-        String idName = "";
-        try {
-            for (Field field : loadModelClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                if (jdbcField.isIdentity()) {
-                    return jdbcField.name();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return idName;
+        //获取表主键名
+        return loadModelClass().getAnnotation(Table.class).primaryKey();
     }
 
     //****************************************** 插入、删除、更新数据 ******************************************//
 
     /**
-     * 创建默认值
+     * 创建初始值
      *
      * @param m        记录对象
+     * @param field    对象变量
      * @param isInsert 是否为插入操作
      */
-    default void createDefaultValue(M m, boolean isInsert) {
-        try {
-            Class<?> clazz = m.getClass();
-            Field[] declaredFields = clazz.getDeclaredFields();
-            for (Field field : declaredFields) {
-                field.setAccessible(true);
-                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                if (jdbcField != null && ObjectUtils.isEmpty(field.get(m))) {
-                    //设置主键默认值
-                    if (jdbcField.isIdentity()) {
-                        field.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
-                    }
-                    //设置创建时间默认值
-                    if ("created_at".equals(jdbcField.name()) && isInsert) {
-                        field.set(m, System.currentTimeMillis() / 1000);
-                    }
-                    //设置更新时间默认值
-                    if ("updated_at".equals(jdbcField.name()) && !isInsert) {
-                        field.set(m, System.currentTimeMillis() / 1000);
-                    }
+    default void createInitValue(M m, Field field, boolean isInsert) throws IllegalAccessException {
+        JDBCField jdbcField = field.getAnnotation(JDBCField.class);
+        if (jdbcField != null) {
+            //设置主键默认值
+            if (jdbcField.name().equals(primaryKey())) {
+                field.set(m, UUID.randomUUID().toString().replaceAll("-", ""));
+            }
+            //设置创建时间默认值
+            if ("created_at".equals(jdbcField.name()) && isInsert) {
+                if (field.getType() == Integer.class) {
+                    field.set(m, (int) (System.currentTimeMillis() / 1000));
+                } else {
+                    field.set(m, System.currentTimeMillis());
                 }
             }
-        } catch (Exception e) {
-            Logger.e("变量未定义", e);
+            //设置更新时间默认值
+            if ("updated_at".equals(jdbcField.name()) && !isInsert) {
+                if (field.getType() == Integer.class) {
+                    field.set(m, (int) (System.currentTimeMillis() / 1000));
+                } else {
+                    field.set(m, System.currentTimeMillis());
+                }
+            }
         }
     }
 
@@ -91,10 +82,10 @@ public interface IProvider<M, P> {
     default String insert(M m) {
         SQL sql = new SQL();
         sql.INSERT_INTO(tableName());
-        createDefaultValue(m, true);
         for (Field field : m.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
+                createInitValue(m, field, true);
                 JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                 if (!ObjectUtils.isEmpty(field.get(m)) && jdbcField != null) {
                     sql.VALUES(jdbcField.name(), "#{" + field.getName() + "}");
@@ -103,57 +94,6 @@ public interface IProvider<M, P> {
                 e.printStackTrace();
             }
         }
-        return sql.toString();
-    }
-
-    /**
-     * 插入多条记录
-     *
-     * @param ms 记录对象集合
-     * @return 插入Sql语句
-     */
-    default String inserts(M... ms) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO ").append(tableName());
-        StringBuilder columns = new StringBuilder();
-        columns.append(" (");
-        StringBuilder values = new StringBuilder();
-        for (int i = 0; i < ms.length; i++) {
-            M m = ms[i];
-            values.append(i == 0 ? " (" : ", (");
-            createDefaultValue(m, true);
-            Field[] fields = m.getClass().getDeclaredFields();
-            for (int j = 0; j < fields.length; j++) {
-                Field field = fields[j];
-                field.setAccessible(true);
-                JDBCField jdbcField = field.getAnnotation(JDBCField.class);
-                if (jdbcField != null) {
-                    try {
-                        String jdbcName = jdbcField.name();
-                        if (i == 0) {
-                            columns.append(j == 0 ? jdbcName : ", " + jdbcName);
-                        }
-                        if (j > 0) {
-                            values.append(", ");
-                        }
-                        Object value = field.get(m);
-                        if (value != null && field.getType() == String.class) {
-                            values.append("'").append(field.get(m)).append("'");
-                        } else if (value == null && field.getType() == Integer.class) {
-                            values.append(0);
-                        } else {
-                            values.append(field.get(m));
-                        }
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            values.append(")");
-        }
-        columns.append(") ");
-        sql.append(columns.toString());
-        sql.append("VALUES ").append(values.toString());
         return sql.toString();
     }
 
@@ -193,10 +133,10 @@ public interface IProvider<M, P> {
         for (Field field : m.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             try {
-                createDefaultValue(m, false);
+                createInitValue(m, field, false);
                 JDBCField jdbcField = field.getAnnotation(JDBCField.class);
                 if (!ObjectUtils.isEmpty(field.get(m)) && jdbcField != null) {
-                    if (jdbcField.isIdentity()) {
+                    if (jdbcField.name().equals(primaryKey())) {
                         sql.WHERE(jdbcField.name() + " = #{" + field.getName() + "}");
                     } else {
                         sql.SET(jdbcField.name() + " = #{" + field.getName() + "}");
@@ -218,16 +158,16 @@ public interface IProvider<M, P> {
      * @return Sql字符串
      */
     default String createSelectSql() {
-        return tableName() + ".*";
+        return "*";
     }
 
     /**
      * 创建FormSql
      *
-     * @param p 查询需要的字段
+     * @param parameter 查询参数对象
      * @return Sql字符串
      */
-    default String createSelectSql(P p) {
+    default String createSelectSql(M parameter) {
         return createSelectSql();
     }
 
@@ -243,27 +183,46 @@ public interface IProvider<M, P> {
     /**
      * 创建FormSql
      *
-     * @param p 查询需要的字段
+     * @param parameter 查询参数对象
      * @return Sql字符串
      */
-    default String createFromSql(P p) {
+    default String createFromSql(M parameter) {
         return createFromSql();
     }
 
     /**
      * 创建查询条件Sql
      *
-     * @param p 查询需要的字段
+     * @param parameter 查询参数对象
      * @return 查询条件Sql
      */
-    default String createWhereSql(P p) {
+    default String createWhereSql(M parameter) {
         return "";
+    }
+
+
+    /**
+     * 拼接WHERE条件语句
+     *
+     * @param sql sql构建对象
+     */
+    default void appendWhereSql(SQL sql) {
+    }
+
+    /**
+     * 拼接WHERE条件语句
+     *
+     * @param sql       sql构建对象
+     * @param parameter 查询参数对象
+     */
+    default void appendWhereSql(SQL sql, M parameter) {
+        appendWhereSql(sql);
     }
 
     /**
      * 附加其他Sql，比如ORDER BY、GROUP BY 等
      *
-     * @return 查询条件Sql
+     * @param sql sql构建对象
      */
     default void appendOtherSql(SQL sql) {
     }
@@ -271,33 +230,33 @@ public interface IProvider<M, P> {
     /**
      * 附加其他Sql，比如ORDER BY、GROUP BY 等
      *
-     * @param p 查询需要的字段
-     * @return 附加Sql
+     * @param sql       sql构建对象
+     * @param parameter 查询参数对象
      */
-    default void appendOtherSql(SQL sql, P p) {
+    default void appendOtherSql(SQL sql, M parameter) {
         appendOtherSql(sql);
     }
 
     /**
      * 查询记录列表
      *
-     * @param p 查询需要的字段
+     * @param parameter 查询参数对象
      * @return 查询Sql
      */
-    default String selectList(P p) {
+    default String selectList(M parameter) {
         SQL sql = new SQL();
-        sql.SELECT(createSelectSql(p)
+        sql.SELECT(createSelectSql(parameter)
                 .replace("SELECT", "").replace("select", ""));
-        sql.FROM(createFromSql(p)
+        sql.FROM(createFromSql(parameter)
                 .replace("FROM", "").replace("from", ""));
-        String whereSql = createWhereSql(p)
+        String whereSql = createWhereSql(parameter)
                 .replace("WHERE", "").replace("where", "");
         if (!StringUtils.isEmpty(whereSql)) {
             sql.WHERE(whereSql);
         }
-        appendOtherSql(sql, p);
-        if (p instanceof SelectParameter) {
-            return sql.toString() + getPageSql(((SelectParameter) p).getPage(), ((SelectParameter) p).getSize());
+        appendOtherSql(sql, parameter);
+        if (parameter instanceof Parameter) {
+            return sql.toString() + getPageSql(((Parameter) parameter).getPage(), ((Parameter) parameter).getSize());
         }
         return sql.toString();
     }
@@ -305,15 +264,15 @@ public interface IProvider<M, P> {
     /**
      * 查询记录列表计数
      *
-     * @param p 查询需要的字段
+     * @param parameter 查询参数对象
      * @return 查询Sql
      */
-    default String countList(P p) {
+    default String countList(M parameter) {
         SQL sql = new SQL();
         sql.SELECT("COUNT(*)");
-        sql.FROM(createFromSql(p)
+        sql.FROM(createFromSql(parameter)
                 .replace("FROM", "").replace("from", ""));
-        String whereSql = createWhereSql(p)
+        String whereSql = createWhereSql(parameter)
                 .replace("WHERE", "").replace("where", "");
         if (!StringUtils.isEmpty(whereSql)) {
             sql.WHERE(whereSql);

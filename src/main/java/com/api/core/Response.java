@@ -4,21 +4,30 @@ import com.alibaba.fastjson.JSON;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author coderyong
  */
-public class Response {
+public class Response<T> {
+
+    public int code;
+    public String message;
+    public int total;
+    public T data;
+
+    public Response(int code, String message, int total, T data) {
+        this.code = code;
+        this.message = message;
+        this.total = total;
+        this.data = data;
+    }
 
     /**
      * 响应成功结果信息
      *
      * @return 响应结果对象
      */
-    public static Map<String, Object> success() {
+    public static <T> Response<T> success() {
         return success(null);
     }
 
@@ -28,7 +37,7 @@ public class Response {
      * @param data 响应数据
      * @return 响应结果对象
      */
-    public static Map<String, Object> success(Object data) {
+    public static <T> Response<T> success(T data) {
         return create(Code.SUCCESS, data, 0);
     }
 
@@ -38,7 +47,7 @@ public class Response {
      * @param data 响应数据
      * @return 响应结果对象
      */
-    public static Map<String, Object> success(Object data, int total) {
+    public static <T> Response<T> success(T data, int total) {
         return create(Code.SUCCESS, data, total);
     }
 
@@ -47,7 +56,7 @@ public class Response {
      *
      * @return 响应结果对象
      */
-    public static Map<String, Object> fail() {
+    public static <T> Response<T> fail() {
         return create(Code.FAIL_OPERATE, null, 0);
     }
 
@@ -57,7 +66,7 @@ public class Response {
      * @param message 响应失败信息
      * @return 响应结果对象
      */
-    public static Map<String, Object> fail(String message) {
+    public static <T> Response<T> fail(String message) {
         return create(Code.FAIL_OPERATE.updateMessage(message), null, 0);
     }
 
@@ -67,7 +76,7 @@ public class Response {
      * @param code 响应码
      * @return 响应结果对象
      */
-    public static Map<String, Object> error(Code code) {
+    public static <T> Response<T> error(Code code) {
         return create(code, null, 0);
     }
 
@@ -76,7 +85,7 @@ public class Response {
      *
      * @return 响应结果对象
      */
-    public static Map<String, Object> errorParameter() {
+    public static <T> Response<T> errorParameter() {
         return create(Code.ERROR_PARA, null, 0);
     }
 
@@ -86,7 +95,7 @@ public class Response {
      * @param message 响应参数错误信息
      * @return 响应结果对象
      */
-    public static Map<String, Object> errorParameter(String message) {
+    public static <T> Response<T> errorParameter(String message) {
         return create(Code.ERROR_PARA.updateMessage(message), null, 0);
     }
 
@@ -97,19 +106,8 @@ public class Response {
      * @param data 响应数据
      * @return 响应结果对象
      */
-    private static Map<String, Object> create(Code code, Object data, int total) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", code.getCode());
-        result.put("message", code.getMessage());
-        if (total == 0) {
-            if (data instanceof List) {
-                result.put("total", ((List) data).size());
-            }
-        } else {
-            result.put("total", total);
-        }
-        result.put("data", data);
-        return result;
+    private static <T> Response<T> create(Code code, T data, int total) {
+        return new Response<>(code.getCode(), code.getMessage(), total, data);
     }
 
     public static void write(HttpServletResponse response, Code code) {

@@ -1,5 +1,7 @@
 package com.api.common;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
@@ -7,6 +9,8 @@ import java.io.FileNotFoundException;
 /**
  * @author coderyong
  */
+@Component
+@ConfigurationProperties(prefix = "config")
 public class ConfigProperties {
     /**
      * 上传地址

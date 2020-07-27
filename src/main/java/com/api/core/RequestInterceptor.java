@@ -32,15 +32,20 @@ public class RequestInterceptor implements HandlerInterceptor {
                 header.put(key, headers.nextElement());
             }
         }
-        //获取请求头信息
-        String headers = header.isEmpty() ? "" : "Header: " + JSON.toJSONString(header, true);
-        //获取请求参数信息
-        String parameters = request.getParameterMap().isEmpty()
-                ? "" : "Parameters: " + JSON.toJSONString(request.getParameterMap(), true);
-        String fromClient = "FromClient: " + getClientIp(request);
-        String requestUrl = "RequestUrl: http://localhost:" + request.getServerPort() + request.getRequestURI();
-
-        Logger.d(fromClient, requestUrl, printHeaders ? headers + "\n" + parameters : parameters);
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("FromClient", getClientIp(request));
+        requestMap.put("RequestUrl", "http://localhost:" + request.getServerPort() + request.getRequestURI());
+        if (printHeaders) {
+            //添加请求头信息
+            requestMap.put("Header", header);
+        }
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        if (!parameterMap.isEmpty()) {
+            //添加请求参数信息
+            requestMap.put("Parameters", parameterMap);
+        }
+        //打印请求信息
+        Logger.json(JSON.toJSONString(requestMap));
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }
 

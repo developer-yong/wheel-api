@@ -5,12 +5,11 @@ import org.mybatis.generator.api.GeneratedJavaFile;
 import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.MyBatisGenerator;
-import org.mybatis.generator.api.dom.java.Field;
-import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
+import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultCommentGenerator;
 import org.mybatis.generator.internal.DefaultShellCallback;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -30,9 +29,9 @@ import static org.mybatis.generator.config.PropertyRegistry.COMMENT_GENERATOR_SU
 public class CodeGenerator extends DefaultCommentGenerator {
 
     //JDBC配置
-    private static final String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&characterEncoding=utf8&serverTimezone=UTC";
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/scl?useSSL=false&characterEncoding=utf8&serverTimezone=UTC";
     private static final String JDBC_USERNAME = "root";
-    private static final String JDBC_PASSWORD = "db123456";
+    private static final String JDBC_PASSWORD = "root123456";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
 
     //项目在硬盘上的基础路径
@@ -48,7 +47,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
     private static final String PACKAGE_MODEL = PACKAGE_NAME + ".model";
     //生成的Mapper存放路径
     private static final String PACKAGE_MAPPER = PACKAGE_NAME + ".mapper";
-    //生成的ServiceImpl实现存放路径
+    //生成的SqlProvider存放路径
     private static final String PACKAGE_PROVIDER = PACKAGE_NAME + ".mapper.provider";
     //生成的Controller存放路径
     private static final String PACKAGE_CONTROLLER = PACKAGE_NAME + ".controller";
@@ -56,18 +55,24 @@ public class CodeGenerator extends DefaultCommentGenerator {
     private static final String PACKAGE_SERVICE = PACKAGE_NAME + ".service";
     //生成的ServiceImpl实现存放路径
     private static final String PACKAGE_SERVICE_IMPL = PACKAGE_NAME + ".service.impl";
-    //生成的ServiceImpl实现存放路径
-    private static final String PACKAGE_SELECT_PARAMETER = PACKAGE_NAME + ".parameter";
 
     //如果表名前带有数据库名需设置此字段，否则设置为空
-    private static final String DB_NAME = "demo";
+    private static final String DB_NAME = "scl";
     //设置是否根据表名忽略字段前缀
     private static final boolean IGNORE_FIELD_PREFIX = false;
 
     private static final Context sContext = new Context(ModelType.FLAT);
 
     public static void main(String[] args) {
+
+//        "task", "task_user", "task_data", "task_device",
+//        "user", "role", "authority", "user_role", "role_authority", "log",
+//        "data", "data_parameter", "parameter","result",
+//        "device", "device_monitor", "algorithm", "algorithm_relation",
+//        generator("attr", "data", "data_attr", "log", "role", "user", "user_role");
+
         generator("user");
+
     }
 
     private static void generator(String... tableNames) {
@@ -78,8 +83,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
             genService(tableName);
             genServiceImpl(tableName);
             genMapper(tableName);
-            genProvider(tableName);
-            genSelectParameter(tableName);
+            genSqlProvider(tableName);
         }
     }
 
@@ -133,7 +137,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
         //添加数据表配置信息
         sContext.addTableConfiguration(createTableConfiguration(tableName, createModelNameByTableName(tableName)));
 
-        List<String> warnings;
+        List<String> warnings = new ArrayList<>();
         MyBatisGenerator generator;
         try {
             Configuration config = new Configuration();
@@ -141,8 +145,7 @@ public class CodeGenerator extends DefaultCommentGenerator {
             config.validate();
 
             DefaultShellCallback callback = new DefaultShellCallback(true);
-            warnings = new ArrayList<>();
-            generator = new MyBatisGenerator(config, callback, new ArrayList<>());
+            generator = new MyBatisGenerator(config, callback, warnings);
             generator.generate(null);
         } catch (Exception e) {
             throw new RuntimeException("生成Model和Mapper失败", e);
@@ -195,8 +198,55 @@ public class CodeGenerator extends DefaultCommentGenerator {
         topLevelClass.addImportedType(
                 new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.JDBCField"));
         topLevelClass.addImportedType(
-                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.TableName"));
-        topLevelClass.addAnnotation("@TableName(value = \"" + introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime() + "\")");
+                new FullyQualifiedJavaType(PACKAGE_NAME + ".model.annotation.Table"));
+        //获取表中所有列字段
+        List<IntrospectedColumn> columns = introspectedTable.getAllColumns();
+        //添加 NotNull 注解
+        for (IntrospectedColumn column : columns) {
+            if (!column.isNullable()) {
+                topLevelClass.addImportedType(
+                        new FullyQualifiedJavaType("javax.validation.constraints.NotNull"));
+                break;
+            }
+        }
+        //判断表备注
+        if (!StringUtils.isEmpty(introspectedTable.getRemarks())) {
+            StringBuilder sb = new StringBuilder();
+            topLevelClass.addJavaDocLine("/**");
+            sb.append(" * ");
+            sb.append(introspectedTable.getRemarks());
+            topLevelClass.addJavaDocLine(sb.toString().replace("\n", " "));
+            topLevelClass.addJavaDocLine(" */");
+        }
+        //获取表名
+        String tableName = introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime();
+        //添加表注解
+        StringBuilder annotation = new StringBuilder("@Table(name = \"");
+        annotation.append(tableName);
+        //获取表主键
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        if (!ObjectUtils.isEmpty(primaryKeyColumns)) {
+            IntrospectedColumn primaryColumn = primaryKeyColumns.get(0);
+            annotation.append("\", primaryKey = \"").append(primaryColumn.getActualColumnName());
+
+            //创建构造方法
+            Method constructorMethod = new Method(introspectedTable.getTableConfiguration().getDomainObjectName());
+            constructorMethod.setConstructor(true);
+            constructorMethod.setVisibility(JavaVisibility.PUBLIC);
+            constructorMethod.addBodyLine("");
+            topLevelClass.addMethod(constructorMethod);
+
+            //创建主键构造方法
+            Method method = new Method(introspectedTable.getTableConfiguration().getDomainObjectName());
+            method.setConstructor(true);
+            method.setVisibility(JavaVisibility.PUBLIC);
+            String idName = getCamelString(primaryColumn.getActualColumnName(), false);
+            method.addParameter(new Parameter(FullyQualifiedJavaType.getStringInstance(), idName));
+            method.addBodyLine("this." + idName + " = " + idName + ";");
+            topLevelClass.addMethod(method);
+        }
+        annotation.append("\")");
+        topLevelClass.addAnnotation(annotation.toString());
         super.addModelClassComment(topLevelClass, introspectedTable);
     }
 
@@ -210,32 +260,35 @@ public class CodeGenerator extends DefaultCommentGenerator {
             field.addJavaDocLine(sb.toString().replace("\n", " "));
             field.addJavaDocLine(" */");
         }
-
-        if (introspectedTable.getPrimaryKeyColumns().contains(introspectedColumn)) {
-            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
-                    + "\", type = \"" + introspectedColumn.getJdbcTypeName()
-                    + "\", isIdentity = true)");
-        } else {
-            field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
-                    + "\", type = \"" + introspectedColumn.getJdbcTypeName() + "\")");
+        if (!introspectedColumn.isNullable()) {
+            String message = field.getName();
+            if (!StringUtils.isEmpty(introspectedColumn.getRemarks())) {
+                message = introspectedColumn.getRemarks();
+            }
+            field.addAnnotation("@NotNull(message = \"" + message + "不能为空\")");
         }
+        field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
+                + "\", type = \"" + introspectedColumn.getJdbcTypeName()
+                + (introspectedColumn.getDefaultValue() == null ? "" : "\", defaultValue = \"" + introspectedColumn.getDefaultValue())
+                + "\")");
         super.addFieldComment(field, introspectedTable, introspectedColumn);
     }
 
     /**
-     * 生成指定 Model 的 Provider 类
+     * 生成指定 Model 的 SqlProvider 类
      *
      * @param tableName 指定表名
      */
-    private static void genProvider(String tableName) {
+    private static void genSqlProvider(String tableName) {
         String modelName = createModelNameByTableName(tableName);
         Map<String, Object> model = new HashMap<>();
         model.put("tableName", tableName);
         model.put("className", modelName);
         model.put("variableName", getCamelString(tableName, false));
+        model.put("variableId", "#{" + getCamelString(tableName, false) + "Id}");
         model.put("package", PACKAGE_NAME);
 
-        freemarkerGenerator(model, PACKAGE_PROVIDER, modelName + "SelectProvider.java", "select-provider.ftl");
+        freemarkerGenerator(model, PACKAGE_PROVIDER, modelName + "SqlProvider.java", "sql-provider.ftl");
     }
 
     /**
@@ -281,21 +334,6 @@ public class CodeGenerator extends DefaultCommentGenerator {
         model.put("package", PACKAGE_NAME);
 
         freemarkerGenerator(model, PACKAGE_SERVICE_IMPL, modelName + "ServiceImpl.java", "service-impl.ftl");
-    }
-
-    /**
-     * 生成指定 Model 的 SelectParameter 类
-     *
-     * @param tableName 指定表名
-     */
-    private static void genSelectParameter(String tableName) {
-        String modelName = createModelNameByTableName(tableName);
-        Map<String, Object> model = new HashMap<>();
-        model.put("className", modelName);
-        model.put("variableName", getCamelString(tableName, false));
-        model.put("package", PACKAGE_NAME);
-
-        freemarkerGenerator(model, PACKAGE_SELECT_PARAMETER, modelName + "SelectParameter.java", "select-parameter.ftl");
     }
 
     /**

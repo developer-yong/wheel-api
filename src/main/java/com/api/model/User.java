@@ -1,48 +1,84 @@
 package com.api.model;
 
-import org.hibernate.validator.constraints.Length;
-
+import com.api.model.annotation.JDBCField;
+import com.api.model.annotation.Table;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
+@Table(name = "user", primaryKey = "user_id")
 public class User {
     /**
      * 用户ID
      */
+    @NotNull(message = "用户ID不能为空")
+    @JDBCField(name = "user_id", type = "VARCHAR")
     private String userId;
 
     /**
-     * 昵称
+     * 用户名
      */
-    @NotNull(message = "用户昵称不能为空")
-    private String nickname;
+    @NotNull(message = "用户名不能为空")
+    @JDBCField(name = "username", type = "VARCHAR")
+    private String username;
 
     /**
      * 密码
      */
-    @NotNull(message = "用户密码不能为空")
-    @Length(min = 6, max = 18, message = "密码长度不能小于6位或大于18位")
+    @NotNull(message = "密码不能为空")
+    @JDBCField(name = "password", type = "VARCHAR")
     private String password;
 
     /**
-     * 年龄
+     * 邮箱
      */
-    private Integer age;
+    @NotNull(message = "邮箱不能为空")
+    @JDBCField(name = "email", type = "VARCHAR")
+    private String email;
 
     /**
-     * 生日
+     * 手机
      */
-    private Date birthday;
+    @NotNull(message = "手机不能为空")
+    @JDBCField(name = "phone", type = "VARCHAR")
+    private String phone;
 
     /**
-     * 头像
+     * 部门
      */
-    private byte[] icon;
+    @NotNull(message = "部门不能为空")
+    @JDBCField(name = "department", type = "VARCHAR")
+    private String department;
 
     /**
-     * 简介
+     * 用户描述
      */
-    private String introduction;
+    @JDBCField(name = "user_description", type = "VARCHAR")
+    private String userDescription;
+
+    /**
+     * 状态（0关闭，1正常）
+     */
+    @JDBCField(name = "status", type = "INTEGER", defaultValue = "1")
+    private Integer status;
+
+    /**
+     * 创建时间
+     */
+    @JDBCField(name = "created_at", type = "BIGINT", defaultValue = "0")
+    private Long createdAt;
+
+    /**
+     * 更新时间
+     */
+    @JDBCField(name = "updated_at", type = "BIGINT", defaultValue = "0")
+    private Long updatedAt;
+
+    public User() {
+        
+    }
+
+    public User(String userId) {
+        this.userId = userId;
+    }
 
     public String getUserId() {
         return userId;
@@ -52,12 +88,12 @@ public class User {
         this.userId = userId;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getUsername() {
+        return username;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -68,35 +104,59 @@ public class User {
         this.password = password;
     }
 
-    public Integer getAge() {
-        return age;
+    public String getEmail() {
+        return email;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public Date getBirthday() {
-        return birthday;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setBirthday(Date birthday) {
-        this.birthday = birthday;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public byte[] getIcon() {
-        return icon;
+    public String getDepartment() {
+        return department;
     }
 
-    public void setIcon(byte[] icon) {
-        this.icon = icon;
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
-    public String getIntroduction() {
-        return introduction;
+    public String getUserDescription() {
+        return userDescription;
     }
 
-    public void setIntroduction(String introduction) {
-        this.introduction = introduction;
+    public void setUserDescription(String userDescription) {
+        this.userDescription = userDescription;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

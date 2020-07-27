@@ -1,44 +1,27 @@
 package com.api;
 
-import com.api.common.ConfigProperties;
-import com.api.core.Logger;
 import com.api.core.RequestInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author coderyong
  */
 @SpringBootApplication
-@WebFilter(urlPatterns = "/api/*", filterName = "Application")
-public class Application extends WebMvcConfigurationSupport implements FilterChain {
+public class Application extends WebMvcConfigurationSupport implements ApplicationContextAware {
+
+    /**
+     * 上下文对象实例
+     */
+    private static ApplicationContext sContext;
 
     public static void main(String[] args) {
-        Logger.ENABLE = true;
-        Logger.T_ENABLE = true;
-        Logger.D_ENABLE = true;
-        Logger.I_ENABLE = true;
-        Logger.W_ENABLE = true;
-        Logger.E_ENABLE = true;
-        SpringApplication.run(Application.class, args);
-    }
-
-    @Bean
-    @ConfigurationProperties(prefix = "config")
-    public ConfigProperties configProperties() {
-        return new ConfigProperties();
+        sContext = SpringApplication.run(Application.class, args);
     }
 
     /**
@@ -54,14 +37,58 @@ public class Application extends WebMvcConfigurationSupport implements FilterCha
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
-        response.setHeader("Access-Control-Max-Age", "3600");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        super.addResourceHandlers(registry);
+        registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        sContext = applicationContext;
+        super.setApplicationContext(applicationContext);
+    }
+
+    /**
+     * 获取ApplicationContext
+     *
+     * @return ApplicationContext
+     */
+    public static ApplicationContext getContext() {
+        return sContext;
+    }
+
+    /**
+     * 通过name获取 Bean.
+     *
+     * @param name 类名
+     * @return Object
+     */
+    public static Object getBean(String name) {
+        return getContext().getBean(name);
+    }
+
+    /**
+     * 通过class获取Bean.
+     *
+     * @param clazz 类class
+     * @param <T>   类类型
+     * @return T
+     */
+    public static <T> T getBean(Class<T> clazz) {
+        return getContext().getBean(clazz);
+    }
+
+    /**
+     * 通过name,以及Clazz返回指定的Bean.
+     *
+     * @param name  类名
+     * @param clazz 类class
+     * @param <T>   类类型
+     * @return T
+     */
+    public static <T> T getBean(String name, Class<T> clazz) {
+        return getContext().getBean(name, clazz);
     }
 }
-
-

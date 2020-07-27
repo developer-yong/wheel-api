@@ -1,6 +1,9 @@
 package com.api.core;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -79,6 +82,26 @@ public class Logger {
         }
     }
 
+    public static void json(String json) {
+        if (ENABLE && D_ENABLE) {
+            if (json.startsWith("{") || json.startsWith("[")) {
+                try {
+                    json = json.trim();
+                    String message = "";
+                    if (json.startsWith("{")) {
+                        message = new JSONObject(json).toString(4);
+                    }
+                    if (json.startsWith("[")) {
+                        message = new JSONArray(json).toString(4);
+                    }
+                    LOGGER.debug(createLogMessage(message));
+                } catch (JSONException e) {
+                    e(getStackTraceString(e));
+                }
+            }
+        }
+    }
+
     private static String getUseMethodName() {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         int usePosition = 3;
@@ -140,7 +163,7 @@ public class Logger {
         if (msg != null) {
             for (String m : msg) {
                 if (m != null) {
-                    String[] lines = m.split(System.getProperty("line.separator"));
+                    String[] lines = m.split("\n");
                     for (String line : lines) {
                         if (line.length() > maxLength) {
                             maxLength = (8 * getTabsSize(line)) + line.length();
