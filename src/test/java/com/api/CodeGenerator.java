@@ -15,10 +15,7 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mybatis.generator.config.PropertyRegistry.COMMENT_GENERATOR_SUPPRESS_ALL_COMMENTS;
 import static org.mybatis.generator.config.PropertyRegistry.COMMENT_GENERATOR_SUPPRESS_DATE;
@@ -204,9 +201,13 @@ public class CodeGenerator extends DefaultCommentGenerator {
         //添加 NotNull 注解
         for (IntrospectedColumn column : columns) {
             if (!column.isNullable()) {
-                topLevelClass.addImportedType(
-                        new FullyQualifiedJavaType("javax.validation.constraints.NotNull"));
-                break;
+                if ("VARCHAR".equals(column.getJdbcTypeName())) {
+                    topLevelClass.addImportedType(
+                            new FullyQualifiedJavaType("javax.validation.constraints.NotEmpty"));
+                } else {
+                    topLevelClass.addImportedType(
+                            new FullyQualifiedJavaType("javax.validation.constraints.NotNull"));
+                }
             }
         }
         //判断表备注
@@ -260,12 +261,16 @@ public class CodeGenerator extends DefaultCommentGenerator {
             field.addJavaDocLine(sb.toString().replace("\n", " "));
             field.addJavaDocLine(" */");
         }
-        if (!introspectedColumn.isNullable()) {
+        if (!introspectedColumn.isNullable() && !introspectedTable.getPrimaryKeyColumns().contains(introspectedColumn)) {
             String message = field.getName();
             if (!StringUtils.isEmpty(introspectedColumn.getRemarks())) {
                 message = introspectedColumn.getRemarks();
             }
-            field.addAnnotation("@NotNull(message = \"" + message + "不能为空\")");
+            if ("VARCHAR".equals(introspectedColumn.getJdbcTypeName())) {
+                field.addAnnotation("@NotEmpty(message = \"" + message + "不能为空\")");
+            } else {
+                field.addAnnotation("@NotNull(message = \"" + message + "不能为空\")");
+            }
         }
         field.addAnnotation("@JDBCField(name = \"" + introspectedColumn.getActualColumnName()
                 + "\", type = \"" + introspectedColumn.getJdbcTypeName()

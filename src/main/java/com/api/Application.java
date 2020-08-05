@@ -1,10 +1,12 @@
 package com.api;
 
+import com.api.common.AccessFilter;
 import com.api.core.RequestInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -22,6 +24,11 @@ public class Application extends WebMvcConfigurationSupport implements Applicati
 
     public static void main(String[] args) {
         sContext = SpringApplication.run(Application.class, args);
+    }
+
+    @Bean(name = "AccessFilter")
+    public AccessFilter registrationFilter() {
+        return new AccessFilter();
     }
 
     /**

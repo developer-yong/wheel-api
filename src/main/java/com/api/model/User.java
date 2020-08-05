@@ -2,49 +2,48 @@ package com.api.model;
 
 import com.api.model.annotation.JDBCField;
 import com.api.model.annotation.Table;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 
 @Table(name = "user", primaryKey = "user_id")
 public class User {
     /**
      * 用户ID
      */
-    @NotNull(message = "用户ID不能为空")
     @JDBCField(name = "user_id", type = "VARCHAR")
     private String userId;
 
     /**
      * 用户名
      */
-    @NotNull(message = "用户名不能为空")
+    @NotEmpty(message = "用户名不能为空")
     @JDBCField(name = "username", type = "VARCHAR")
     private String username;
 
     /**
      * 密码
      */
-    @NotNull(message = "密码不能为空")
+    @NotEmpty(message = "密码不能为空")
     @JDBCField(name = "password", type = "VARCHAR")
     private String password;
 
     /**
      * 邮箱
      */
-    @NotNull(message = "邮箱不能为空")
+    @NotEmpty(message = "邮箱不能为空")
     @JDBCField(name = "email", type = "VARCHAR")
     private String email;
 
     /**
      * 手机
      */
-    @NotNull(message = "手机不能为空")
+    @NotEmpty(message = "手机不能为空")
     @JDBCField(name = "phone", type = "VARCHAR")
     private String phone;
 
     /**
      * 部门
      */
-    @NotNull(message = "部门不能为空")
+    @NotEmpty(message = "部门不能为空")
     @JDBCField(name = "department", type = "VARCHAR")
     private String department;
 

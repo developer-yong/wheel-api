@@ -11,7 +11,5 @@ public @interface JDBCField {
 
     String type();
 
-    boolean notNull() default false;
-
     String defaultValue() default "";
 }

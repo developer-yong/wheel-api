@@ -1,17 +1,21 @@
 package com.api.common;
 
+import com.api.core.Logger;
+
 import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
  * Web请求过滤器
  */
-@javax.servlet.annotation.WebFilter(urlPatterns = "/api/*", filterName = "WebFilter")
-public class WebFilter implements Filter {
+@WebFilter(urlPatterns = "/*", filterName = "AccessFilter")
+public class AccessFilter implements Filter {
+
     @Override
     public void init(FilterConfig filterConfig) {
-
+        Logger.d("AccessFilter -> init" + filterConfig.toString());
     }
 
     @Override
@@ -27,6 +31,6 @@ public class WebFilter implements Filter {
 
     @Override
     public void destroy() {
-
+        Logger.d("AccessFilter -> destroy");
     }
 }

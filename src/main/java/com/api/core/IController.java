@@ -34,7 +34,7 @@ public interface IController<M> {
         IService<M> service = createService();
         //判断是否有错误验证信息
         if (result != null && result.hasErrors()) {
-            FieldError error = (FieldError) result.getAllErrors().get(0);
+            FieldError error = result.getFieldErrors().get(0);
             if (!error.getField().equals(service.getIdName(m))) {
                 return Response.errorParameter(error.getDefaultMessage());
             }

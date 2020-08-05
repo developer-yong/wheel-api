@@ -2,7 +2,6 @@ package com.api.controller;
 
 import com.api.core.IController;
 import com.api.core.IService;
-import com.api.core.Parameter;
 import com.api.core.Response;
 import com.api.model.User;
 import com.api.service.UserService;
